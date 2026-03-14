@@ -49,7 +49,7 @@ reviews:
       - name: "Coverage threshold"
         mode: "warning"
         instructions: >
-          Verify that changed packages maintain at least 80% test coverage when production
+          Verify that changed packages maintain at least 90% test coverage when production
           code changes. If tests or coverage evidence are missing, call that out and suggest
           concrete test gaps.
       - name: "Architecture boundaries"

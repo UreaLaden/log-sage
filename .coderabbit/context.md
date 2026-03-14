@@ -50,7 +50,7 @@ Detectors must:
 
 ## Test Policy
 
-Modified packages must maintain ≥80% coverage.
+Modified packages must maintain ≥90% coverage.
 
 All new logic must include tests.
 
