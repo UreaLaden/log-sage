@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const maxLogfmtTokenSize = 1 << 20
+
 type logfmtField struct {
 	key   string
 	value string
@@ -19,6 +21,7 @@ type logfmtField struct {
 // ctx.Err().
 func ParseLogfmt(ctx context.Context, r io.Reader) ([]LogEntry, error) {
 	scanner := bufio.NewScanner(r)
+	scanner.Buffer(make([]byte, 0, 64*1024), maxLogfmtTokenSize)
 	entries := make([]LogEntry, 0)
 
 	for scanner.Scan() {

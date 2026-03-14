@@ -219,6 +219,34 @@ func TestParseLogfmtTrailingBackslash(t *testing.T) {
 	}
 }
 
+func TestParseLogfmtLargeLine(t *testing.T) {
+	t.Parallel()
+
+	msg := strings.Repeat("x", 70*1024)
+	line := `level=info msg="` + msg + `"`
+
+	entries, err := ParseLogfmt(context.Background(), strings.NewReader(line))
+	if err != nil {
+		t.Fatalf("ParseLogfmt() unexpected error for large line: %v", err)
+	}
+
+	if len(entries) != 1 {
+		t.Fatalf("ParseLogfmt() entry count = %d, want 1", len(entries))
+	}
+
+	if entries[0].Level != "info" {
+		t.Fatalf("entries[0].Level = %q, want %q", entries[0].Level, "info")
+	}
+
+	if entries[0].Message != msg {
+		t.Fatalf("entries[0].Message length = %d, want %d", len(entries[0].Message), len(msg))
+	}
+
+	if entries[0].Raw != line {
+		t.Fatalf("entries[0].Raw length = %d, want %d", len(entries[0].Raw), len(line))
+	}
+}
+
 func TestParseLogfmtScannerError(t *testing.T) {
 	t.Parallel()
 
