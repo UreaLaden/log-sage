@@ -3,11 +3,26 @@ package normalize
 import (
 	"context"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 )
+
+type errorReader struct {
+	done bool
+}
+
+func (e *errorReader) Read(p []byte) (int, error) {
+	if e.done {
+		return 0, errors.New("read error")
+	}
+
+	e.done = true
+	copy(p, "level=info msg=ok\n")
+	return len("level=info msg=ok\n"), nil
+}
 
 func TestParseLogfmtDatasets(t *testing.T) {
 	t.Parallel()
@@ -151,5 +166,76 @@ func TestParseLogfmtCanceledContext(t *testing.T) {
 	_, err := ParseLogfmt(ctx, strings.NewReader(`level=info msg="starting worker"`))
 	if !errors.Is(err, context.Canceled) {
 		t.Fatalf("ParseLogfmt() error = %v, want %v", err, context.Canceled)
+	}
+}
+
+func TestParseLogfmtCanceledContextWithEmptyReader(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := ParseLogfmt(ctx, strings.NewReader(""))
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("ParseLogfmt() error = %v, want %v", err, context.Canceled)
+	}
+}
+
+func TestParseLogfmtTrailingBackslashInQuotedValue(t *testing.T) {
+	t.Parallel()
+
+	entries, err := ParseLogfmt(context.Background(), strings.NewReader("level=info msg=\"trailing\\\""))
+	if err != nil {
+		t.Fatalf("ParseLogfmt() error = %v", err)
+	}
+
+	if len(entries) != 1 {
+		t.Fatalf("ParseLogfmt() entry count = %d, want 1", len(entries))
+	}
+
+	if entries[0].Level != "info" {
+		t.Fatalf("entries[0].Level = %q, want %q", entries[0].Level, "info")
+	}
+
+	if entries[0].Message == "" {
+		t.Fatal("entries[0].Message = empty, want non-empty stable result")
+	}
+}
+
+func TestParseLogfmtScannerError(t *testing.T) {
+	t.Parallel()
+
+	_, err := ParseLogfmt(context.Background(), &errorReader{})
+	if err == nil {
+		t.Fatal("ParseLogfmt() error = nil, want non-nil")
+	}
+
+	if errors.Is(err, io.EOF) {
+		t.Fatalf("ParseLogfmt() error = %v, want non-EOF error", err)
+	}
+}
+
+func TestParseLogfmtMalformedLineStillReturnsEntry(t *testing.T) {
+	t.Parallel()
+
+	entries, err := ParseLogfmt(context.Background(), strings.NewReader("brokenpair\n"))
+	if err != nil {
+		t.Fatalf("ParseLogfmt() error = %v", err)
+	}
+
+	if len(entries) != 1 {
+		t.Fatalf("ParseLogfmt() entry count = %d, want 1", len(entries))
+	}
+
+	if entries[0].Raw != "brokenpair" {
+		t.Fatalf("entries[0].Raw = %q, want %q", entries[0].Raw, "brokenpair")
+	}
+
+	if entries[0].Fields != nil {
+		t.Fatalf("entries[0].Fields = %#v, want nil", entries[0].Fields)
+	}
+
+	if entries[0].Message != "" {
+		t.Fatalf("entries[0].Message = %q, want empty", entries[0].Message)
 	}
 }
