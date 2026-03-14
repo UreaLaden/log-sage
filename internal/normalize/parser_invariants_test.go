@@ -9,8 +9,6 @@ import (
 	"testing"
 )
 
-const maxInvariantScanTokenSize = 1 << 20
-
 func TestParserInvariants(t *testing.T) {
 	t.Parallel()
 
@@ -122,7 +120,7 @@ func readNonEmptyLines(t *testing.T, path string) []string {
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
-	scanner.Buffer(make([]byte, 0, 64*1024), maxInvariantScanTokenSize)
+	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)
 	lines := make([]string, 0)
 	for scanner.Scan() {
 		line := scanner.Text()
