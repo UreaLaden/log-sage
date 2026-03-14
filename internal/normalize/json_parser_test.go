@@ -218,6 +218,15 @@ func TestParseJSONDatasets(t *testing.T) {
 				"host",
 			},
 		},
+		{
+			name:        "mixed json field aliases",
+			file:        "json-mixed-keys.log",
+			wantLevels:  map[string]bool{"error": true, "warn": true, "info": true},
+			wantMessage: "retrying TLS handshake",
+			requiredFieldKeys: []string{
+				"service",
+			},
+		},
 	}
 
 	for _, tt := range tests {
