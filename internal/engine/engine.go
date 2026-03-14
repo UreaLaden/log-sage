@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 
+	"github.com/Urealaden/log-sage-temp/internal/normalize"
 	"github.com/Urealaden/log-sage-temp/pkg/types"
 )
 
@@ -40,20 +41,17 @@ func (e *engine) Analyze(ctx context.Context, input types.DiagnosticInput) (*typ
 	return e.generateResult(ctx, ranked)
 }
 
-type normalizedInput struct{}
+type normalizedInput []normalize.Line
 
 type extractedSignals struct{}
 
 func (e *engine) normalize(ctx context.Context, input types.DiagnosticInput) (normalizedInput, error) {
-	select {
-	case <-ctx.Done():
-		return normalizedInput{}, ctx.Err()
-	default:
+	lines, err := normalize.Normalize(ctx, input.Reader)
+	if err != nil {
+		return nil, err
 	}
 
-	_ = input
-
-	return normalizedInput{}, nil
+	return normalizedInput(lines), nil
 }
 
 func (e *engine) extractSignals(ctx context.Context, input normalizedInput) (extractedSignals, error) {
