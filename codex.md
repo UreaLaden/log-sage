@@ -35,3 +35,110 @@ Codex must update `.ai/repo-map.md` whenever a task:
 If no update is needed, Codex must explicitly state that in `.ai/handoffs/current.md`.
 
 `.ai/repo-map.md` must reflect the current implemented repository state, not just the planned architecture.
+
+## Handoff File Requirement
+
+Before starting any implementation task, Codex must:
+
+1. Read `.ai/handoffs/current.md` if it exists
+2. Update `.ai/handoffs/current.md` before making code changes
+3. Ensure `.ai/handoffs/current.md` tracks only the current task
+4. Use `.ai/handoffs/template.md` as the required structure
+
+At minimum, the pre-execution handoff update must include:
+- task_id
+- task_title
+- status: in-progress
+- owner: codex
+- mapped backlog scope
+- planned file changes
+
+After completing work, Codex must update `.ai/handoffs/current.md` with:
+- implementation steps
+- files changed
+- commands run
+- test/build results
+- test coverage
+- assumptions made
+- risks or concerns
+- recommended next steps
+- completion status
+
+## Scope Control
+
+Every implementation task must be tied to specific work items from `.ai/backlog/mapping.md`.
+
+Codex must record in `.ai/handoffs/current.md`:
+- Epic
+- Feature
+- Task(s)
+
+Codex must stay within the mapped scope.
+
+If out-of-scope work is required for compilation or task completion, Codex must record it under:
+
+- Scope Variance
+- Risks or Concerns
+- Recommended Next Steps
+
+Codex must not silently expand into sibling tasks, future tasks, or speculative cleanup.
+
+## Test Coverage Requirement
+
+When Codex adds or changes production code, it must evaluate whether new or updated tests are required.
+
+Default rule:
+- new logic requires new or updated tests
+
+Minimum expectation:
+- add at least one focused test covering the new behavior
+- add an edge-case or failure-path test when applicable
+
+Passing `go test ./...` alone is not sufficient if no task-specific tests were added for changed production code.
+
+### Coverage Threshold
+
+When Codex adds or changes production code, it must measure test coverage for the affected production package(s).
+
+Minimum requirement:
+- changed production package(s) must maintain at least 80% test coverage
+
+Required coverage workflow:
+1. Run `go test` for the affected package with coverage enabled
+2. Generate a coverage profile
+3. Record the result in `.ai/handoffs/current.md`
+
+Example commands:
+- `go test ./internal/normalize -coverprofile=coverage.out`
+- `go tool cover -func=coverage.out`
+
+Handoff requirement:
+Codex must record in `.ai/handoffs/current.md`:
+- test files added or updated
+- coverage commands run
+- coverage % for affected package(s)
+- whether the 80% minimum was met
+
+If coverage is below 80%, Codex must:
+- add tests until the threshold is met, or
+- stop and explicitly document why the threshold could not be met
+
+Codex must include any new or modified test files in:
+- Files Changed
+- Test Coverage
+
+This rule applies unless the task is explicitly marked test-exempt in the prompt or mapped backlog scope.
+
+## Verification Requirement
+
+After implementation, Codex must run the verification commands required by the task prompt.
+
+At minimum, for normal Go implementation tasks:
+- `go test ./...`
+- `go build ./cmd/logsage`
+
+If additional package-level coverage commands are required, they must also be run and recorded in the handoff.
+
+## Completion Output Rule
+
+When Codex completes an implementation task in this repository, the final response must include a suggested commit message, even if the user did not explicitly ask for one.
