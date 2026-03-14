@@ -140,13 +140,14 @@ func TestParsePlaintextDatasets(t *testing.T) {
 	tests := []struct {
 		name     string
 		file     string
-		validate func(t *testing.T, file string, lineNo int, raw string, entry LogEntry)
+		validate func(t *testing.T, file string, lineNo int, entryIndex int, raw string, entry LogEntry)
 	}{
 		{
 			name: "plaintext basic logs",
 			file: "plaintext-basic.log",
-			validate: func(t *testing.T, file string, lineNo int, raw string, entry LogEntry) {
+			validate: func(t *testing.T, file string, lineNo int, entryIndex int, raw string, entry LogEntry) {
 				t.Helper()
+				_ = entryIndex
 
 				if entry.Raw != raw {
 					t.Fatalf("file=%s line=%d raw=%q: expected raw preservation, got %q", file, lineNo, raw, entry.Raw)
@@ -171,24 +172,24 @@ func TestParsePlaintextDatasets(t *testing.T) {
 		{
 			name: "plaintext level variants",
 			file: "plaintext-level-variants.log",
-			validate: func(t *testing.T, file string, lineNo int, raw string, entry LogEntry) {
+			validate: func(t *testing.T, file string, lineNo int, entryIndex int, raw string, entry LogEntry) {
 				t.Helper()
 
-				wantLevels := map[int]string{
-					1: "error",
-					2: "warn",
-					3: "debug",
-					4: "panic",
-					5: "fatal",
+				expected := []struct {
+					level   string
+					message string
+				}{
+					{level: "error", message: "redis connection refused"},
+					{level: "warn", message: "cache nearing memory limit"},
+					{level: "debug", message: "starting worker"},
+					{level: "panic", message: "runtime error: index out of range"},
+					{level: "fatal", message: "unable to bind port 8080"},
 				}
 
-				wantMessages := map[int]string{
-					1: "redis connection refused",
-					2: "cache nearing memory limit",
-					3: "starting worker",
-					4: "runtime error: index out of range",
-					5: "unable to bind port 8080",
+				if entryIndex < 1 || entryIndex > len(expected) {
+					t.Fatalf("file=%s line=%d raw=%q: no expected entry for logical index %d", file, lineNo, raw, entryIndex)
 				}
+				want := expected[entryIndex-1]
 
 				if entry.Raw != raw {
 					t.Fatalf("file=%s line=%d raw=%q: expected raw preservation, got %q", file, lineNo, raw, entry.Raw)
@@ -196,11 +197,11 @@ func TestParsePlaintextDatasets(t *testing.T) {
 				if entry.Timestamp == nil {
 					t.Fatalf("file=%s line=%d raw=%q: expected timestamp, got nil", file, lineNo, raw)
 				}
-				if want := wantLevels[lineNo]; entry.Level != want {
-					t.Fatalf("file=%s line=%d raw=%q: expected level %q, got %q", file, lineNo, raw, want, entry.Level)
+				if entry.Level != want.level {
+					t.Fatalf("file=%s line=%d raw=%q: expected level %q, got %q", file, lineNo, raw, want.level, entry.Level)
 				}
-				if want := wantMessages[lineNo]; entry.Message != want {
-					t.Fatalf("file=%s line=%d raw=%q: expected message %q, got %q", file, lineNo, raw, want, entry.Message)
+				if entry.Message != want.message {
+					t.Fatalf("file=%s line=%d raw=%q: expected message %q, got %q", file, lineNo, raw, want.message, entry.Message)
 				}
 			},
 		},
@@ -219,14 +220,16 @@ func TestParsePlaintextDatasets(t *testing.T) {
 			defer file.Close()
 
 			scanner := bufio.NewScanner(file)
+			entryIndex := 0
 			for i := 1; scanner.Scan(); i++ {
 				raw := scanner.Text()
 				if strings.TrimSpace(raw) == "" {
 					continue
 				}
 
+				entryIndex++
 				entry := ParsePlaintext(raw)
-				tt.validate(t, tt.file, i, raw, entry)
+				tt.validate(t, tt.file, i, entryIndex, raw, entry)
 			}
 
 			if err := scanner.Err(); err != nil {
