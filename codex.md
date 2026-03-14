@@ -129,6 +129,28 @@ Codex must include any new or modified test files in:
 
 This rule applies unless the task is explicitly marked test-exempt in the prompt or mapped backlog scope.
 
+## Doc Comment Requirement
+
+All exported Go symbols added or modified by Codex must have a doc comment.
+
+Rules:
+- Every exported function, type, method, and variable must have a comment beginning with its name
+- Comments go immediately above the declaration with no blank line between them
+- Unexported symbols do not require comments
+- Do not add comments to unexported helpers unless the logic is non-obvious
+
+Example:
+
+```go
+// ParseLogfmt reads logfmt-formatted lines from r and returns a slice of
+// LogEntry values. Empty lines are skipped. ctx cancellation is respected
+// between lines; if ctx is done the function returns immediately with ctx.Err().
+func ParseLogfmt(ctx context.Context, r io.Reader) ([]LogEntry, error) {
+```
+
+Codex must verify doc comment presence before marking a task complete.
+Missing doc comments on exported symbols are a required fix, not optional style.
+
 ## Verification Requirement
 
 After implementation, Codex must run the verification commands required by the task prompt.

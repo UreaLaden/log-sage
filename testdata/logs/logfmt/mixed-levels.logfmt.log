@@ -1,0 +1,5 @@
+time=2026-03-14T12:00:03Z level=debug msg="starting worker"
+time=2026-03-14T12:00:04Z level=warning msg="cache nearing memory limit"
+time=2026-03-14T12:00:05Z level=panic msg="runtime error: index out of range"
+time=2026-03-14T12:00:06Z level=fatal msg="unable to bind port 8080"
+time=2026-03-14T12:00:07Z level=info component=server port=8080
