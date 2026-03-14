@@ -13,6 +13,10 @@ type logfmtField struct {
 	value string
 }
 
+// ParseLogfmt reads logfmt-formatted lines from r and returns a slice of
+// LogEntry values. Empty lines are skipped. ctx cancellation is respected
+// between lines; if ctx is done the function returns immediately with
+// ctx.Err().
 func ParseLogfmt(ctx context.Context, r io.Reader) ([]LogEntry, error) {
 	scanner := bufio.NewScanner(r)
 	entries := make([]LogEntry, 0)

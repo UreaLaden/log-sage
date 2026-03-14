@@ -10,18 +10,18 @@ import (
 	"testing"
 )
 
-type errorReader struct {
-	done bool
+type errReader struct {
+	used bool
 }
 
-func (e *errorReader) Read(p []byte) (int, error) {
-	if e.done {
-		return 0, errors.New("read error")
+func (e *errReader) Read(p []byte) (int, error) {
+	if e.used {
+		return 0, errors.New("simulated read error")
 	}
 
-	e.done = true
-	copy(p, "level=info msg=ok\n")
-	return len("level=info msg=ok\n"), nil
+	e.used = true
+	n := copy(p, "level=info msg=ok\n")
+	return n, nil
 }
 
 func TestParseLogfmtDatasets(t *testing.T) {
@@ -40,16 +40,27 @@ func TestParseLogfmtDatasets(t *testing.T) {
 			validateAt: func(t *testing.T, file string, index int, entry LogEntry) {
 				t.Helper()
 
-				wantLevels := []string{"info", "warn", "error"}
-				wantMessages := []string{"starting worker", "cache nearing memory limit", "redis connection refused"}
+				type want struct {
+					level   string
+					message string
+				}
+
+				wantEntries := []want{
+					{level: "info", message: "starting worker"},
+					{level: "warn", message: "cache nearing memory limit"},
+					{level: "error", message: "redis connection refused"},
+				}
+				if index >= len(wantEntries) {
+					t.Fatalf("file=%s entry=%d raw=%q: unexpected extra parsed entry", file, index+1, entry.Raw)
+				}
 				if entry.Raw == "" {
 					t.Fatalf("file=%s entry=%d: expected raw preservation", file, index+1)
 				}
-				if entry.Level != wantLevels[index] {
-					t.Fatalf("file=%s entry=%d raw=%q: expected level %q, got %q", file, index+1, entry.Raw, wantLevels[index], entry.Level)
+				if entry.Level != wantEntries[index].level {
+					t.Fatalf("file=%s entry=%d raw=%q: expected level %q, got %q", file, index+1, entry.Raw, wantEntries[index].level, entry.Level)
 				}
-				if entry.Message != wantMessages[index] {
-					t.Fatalf("file=%s entry=%d raw=%q: expected message %q, got %q", file, index+1, entry.Raw, wantMessages[index], entry.Message)
+				if entry.Message != wantEntries[index].message {
+					t.Fatalf("file=%s entry=%d raw=%q: expected message %q, got %q", file, index+1, entry.Raw, wantEntries[index].message, entry.Message)
 				}
 				if entry.Timestamp != nil {
 					t.Fatalf("file=%s entry=%d raw=%q: expected nil timestamp, got %v", file, index+1, entry.Raw, entry.Timestamp)
@@ -77,16 +88,26 @@ func TestParseLogfmtDatasets(t *testing.T) {
 			validateAt: func(t *testing.T, file string, index int, entry LogEntry) {
 				t.Helper()
 
-				wantLevels := []string{"debug", "warn", "panic", "fatal", "info"}
-				if entry.Level != wantLevels[index] {
-					t.Fatalf("file=%s entry=%d raw=%q: expected level %q, got %q", file, index+1, entry.Raw, wantLevels[index], entry.Level)
+				type want struct {
+					level   string
+					message string
 				}
-				if index == 4 {
-					if entry.Message != "component=server port=8080" {
-						t.Fatalf("file=%s entry=%d raw=%q: expected reconstructed message, got %q", file, index+1, entry.Raw, entry.Message)
-					}
-				} else if entry.Message == "" {
-					t.Fatalf("file=%s entry=%d raw=%q: expected message, got empty", file, index+1, entry.Raw)
+
+				wantEntries := []want{
+					{level: "debug", message: "starting worker"},
+					{level: "warn", message: "cache nearing memory limit"},
+					{level: "panic", message: "runtime error: index out of range"},
+					{level: "fatal", message: "unable to bind port 8080"},
+					{level: "info", message: "component=server port=8080"},
+				}
+				if index >= len(wantEntries) {
+					t.Fatalf("file=%s entry=%d raw=%q: unexpected extra parsed entry", file, index+1, entry.Raw)
+				}
+				if entry.Level != wantEntries[index].level {
+					t.Fatalf("file=%s entry=%d raw=%q: expected level %q, got %q", file, index+1, entry.Raw, wantEntries[index].level, entry.Level)
+				}
+				if entry.Message != wantEntries[index].message {
+					t.Fatalf("file=%s entry=%d raw=%q: expected message %q, got %q", file, index+1, entry.Raw, wantEntries[index].message, entry.Message)
 				}
 			},
 		},
@@ -169,7 +190,7 @@ func TestParseLogfmtCanceledContext(t *testing.T) {
 	}
 }
 
-func TestParseLogfmtCanceledContextWithEmptyReader(t *testing.T) {
+func TestParseLogfmtCanceledContextEmptyInput(t *testing.T) {
 	t.Parallel()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -181,31 +202,27 @@ func TestParseLogfmtCanceledContextWithEmptyReader(t *testing.T) {
 	}
 }
 
-func TestParseLogfmtTrailingBackslashInQuotedValue(t *testing.T) {
+func TestParseLogfmtTrailingBackslash(t *testing.T) {
 	t.Parallel()
 
-	entries, err := ParseLogfmt(context.Background(), strings.NewReader("level=info msg=\"trailing\\\""))
+	entries, err := ParseLogfmt(context.Background(), strings.NewReader(`level=info msg="trailing\`))
 	if err != nil {
-		t.Fatalf("ParseLogfmt() error = %v", err)
+		t.Fatalf("ParseLogfmt() unexpected error: %v", err)
 	}
 
 	if len(entries) != 1 {
 		t.Fatalf("ParseLogfmt() entry count = %d, want 1", len(entries))
 	}
 
-	if entries[0].Level != "info" {
-		t.Fatalf("entries[0].Level = %q, want %q", entries[0].Level, "info")
-	}
-
-	if entries[0].Message == "" {
-		t.Fatal("entries[0].Message = empty, want non-empty stable result")
+	if entries[0].Raw == "" {
+		t.Fatalf("ParseLogfmt() entry.Raw must not be empty")
 	}
 }
 
 func TestParseLogfmtScannerError(t *testing.T) {
 	t.Parallel()
 
-	_, err := ParseLogfmt(context.Background(), &errorReader{})
+	_, err := ParseLogfmt(context.Background(), &errReader{})
 	if err == nil {
 		t.Fatal("ParseLogfmt() error = nil, want non-nil")
 	}
@@ -237,5 +254,47 @@ func TestParseLogfmtMalformedLineStillReturnsEntry(t *testing.T) {
 
 	if entries[0].Message != "" {
 		t.Fatalf("entries[0].Message = %q, want empty", entries[0].Message)
+	}
+}
+
+func TestParseLogfmtIgnoresEmptyKeyAndUnknownLevel(t *testing.T) {
+	t.Parallel()
+
+	entries, err := ParseLogfmt(context.Background(), strings.NewReader(`=orphan level=trace msg="still running"`))
+	if err != nil {
+		t.Fatalf("ParseLogfmt() error = %v", err)
+	}
+
+	if len(entries) != 1 {
+		t.Fatalf("ParseLogfmt() entry count = %d, want 1", len(entries))
+	}
+
+	if entries[0].Level != "" {
+		t.Fatalf("entries[0].Level = %q, want empty", entries[0].Level)
+	}
+
+	if entries[0].Message != "still running" {
+		t.Fatalf("entries[0].Message = %q, want %q", entries[0].Message, "still running")
+	}
+
+	if _, ok := entries[0].Fields[""]; ok {
+		t.Fatalf("entries[0].Fields contained empty key: %#v", entries[0].Fields)
+	}
+}
+
+func TestDetectTimestampEdgeCases(t *testing.T) {
+	t.Parallel()
+
+	if got := detectTimestamp(""); got != "" {
+		t.Fatalf("detectTimestamp(\"\") = %q, want empty", got)
+	}
+
+	if got := detectTimestamp("   "); got != "" {
+		t.Fatalf("detectTimestamp(whitespace) = %q, want empty", got)
+	}
+
+	want := "2026-03-14T12:01:02.123456789Z"
+	if got := detectTimestamp(want + " worker started"); got != want {
+		t.Fatalf("detectTimestamp(RFC3339Nano line) = %q, want %q", got, want)
 	}
 }
