@@ -142,3 +142,5 @@ If additional package-level coverage commands are required, they must also be ru
 ## Completion Output Rule
 
 When Codex completes an implementation task in this repository, the final response must include a suggested commit message, even if the user did not explicitly ask for one.
+
+The final response must also include short manual validation steps the user can run locally to spot-check the implemented behavior after automated verification succeeds.

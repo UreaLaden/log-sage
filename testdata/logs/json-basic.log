@@ -1,0 +1,12 @@
+{"timestamp":"2026-03-14T12:00:00Z","level":"ERROR","message":"redis connection refused","service":"api"}
+{"timestamp":"2026-03-14T12:00:01Z","level":"INFO","message":"retrying connection","service":"api"}
+{"timestamp":"2026-03-14T12:00:02Z","level":"INFO","message":"retrying connection","service":"api"}
+{"timestamp":"2026-03-14T12:00:03Z","level":"ERROR","message":"redis connection refused","service":"api"}
+{"timestamp":"2026-03-14T12:00:04Z","level":"INFO","message":"retrying connection","service":"api"}
+{"timestamp":"2026-03-14T12:00:05Z","level":"INFO","message":"retrying connection","service":"api"}
+{"timestamp":"2026-03-14T12:00:06Z","level":"ERROR","message":"redis connection refused","service":"api"}
+{"timestamp":"2026-03-14T12:00:07Z","level":"INFO","message":"retrying connection","service":"api"}
+{"timestamp":"2026-03-14T12:00:08Z","level":"INFO","message":"retrying connection","service":"api"}
+{"timestamp":"2026-03-14T12:00:09Z","level":"ERROR","message":"redis connection refused","service":"api"}
+{"timestamp":"2026-03-14T12:00:10Z","level":"INFO","message":"retrying connection","service":"api"}
+{"timestamp":"2026-03-14T12:00:11Z","level":"INFO","message":"retrying connection","service":"api"}

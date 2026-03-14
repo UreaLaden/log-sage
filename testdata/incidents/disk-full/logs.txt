@@ -1,0 +1,3 @@
+2026-03-14T12:00:01Z ERROR no space left on device while writing wal segment
+2026-03-14T12:00:02Z ERROR ENOSPC on /var/lib/postgresql/data
+2026-03-14T12:00:03Z WARN disk quota exceeded for pvc-db-01

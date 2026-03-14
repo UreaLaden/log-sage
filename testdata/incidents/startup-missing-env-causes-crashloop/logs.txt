@@ -1,0 +1,4 @@
+2026-03-14T12:00:01Z ERROR required env REDIS_URL is not set
+2026-03-14T12:00:02Z ERROR startup failed: config not found
+2026-03-14T12:00:03Z WARN Back-off restarting failed container
+2026-03-14T12:00:04Z WARN CrashLoopBackOff

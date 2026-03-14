@@ -1,0 +1,10 @@
+{
+  "issue_classes": [
+    "CrashLoopBackOff"
+  ],
+  "min_confidence": "high",
+  "required_evidence": [
+    "CrashLoopBackOff",
+    "Back-off restarting failed container"
+  ]
+}

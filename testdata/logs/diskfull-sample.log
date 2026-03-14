@@ -1,0 +1,3 @@
+2026-03-14T12:00:01Z ERROR write /tmp/cache.db: no space left on device
+2026-03-14T12:00:02Z ERROR ENOSPC while rotating logs
+2026-03-14T12:00:03Z WARN disk quota exceeded for volume pvc-123

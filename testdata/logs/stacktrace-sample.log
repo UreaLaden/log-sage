@@ -1,0 +1,5 @@
+2026-03-14T12:00:01Z panic: redis unavailable
+    goroutine 1 [running]:
+    main.main()
+    /app/main.go:42 +0x1a3
+    runtime.main()

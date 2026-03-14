@@ -1,0 +1,11 @@
+{
+  "issue_classes": [
+    "MissingEnvVar",
+    "CrashLoopBackOff"
+  ],
+  "min_confidence": "medium",
+  "required_evidence": [
+    "required env",
+    "CrashLoopBackOff"
+  ]
+}

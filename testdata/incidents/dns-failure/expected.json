@@ -1,0 +1,10 @@
+{
+  "issue_classes": [
+    "DNSFailure"
+  ],
+  "min_confidence": "high",
+  "required_evidence": [
+    "no such host",
+    "name resolution"
+  ]
+}

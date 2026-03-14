@@ -1,0 +1,6 @@
+2026-03-14T12:00:01Z panic: runtime error: invalid memory address or nil pointer dereference
+    goroutine 1 [running]:
+    main.handleRequest(0x0)
+    /app/server.go:144 +0x38
+    main.main()
+    /app/main.go:42 +0x1a3

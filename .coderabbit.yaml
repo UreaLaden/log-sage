@@ -1,0 +1,90 @@
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_instructions: >
+    Generate concise PR summaries aligned to this repository's task-driven workflow.
+    Emphasize backlog mapping, behavior changes, verification results, coverage, and risks.
+  review_status: true
+  review_details: false
+  collapse_walkthrough: false
+
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: false
+
+  path_instructions:
+    - path: "cmd/**"
+      instructions: >
+        Review for CLI thin-adapter discipline. Flag any business logic, detection logic,
+        or engine behavior implemented in cmd/.
+    - path: "internal/**"
+      instructions: >
+        Review for architecture, determinism, and scope discipline. Flag non-deterministic
+        behavior, map-iteration-order risks, hidden coupling, or scope drift beyond the
+        mapped backlog task.
+    - path: "pkg/**"
+      instructions: >
+        Review shared public contracts carefully for backward-compatibility, naming clarity,
+        and spec alignment.
+    - path: ".ai/**"
+      instructions: >
+        Verify workflow artifacts remain consistent with the active task, handoff template,
+        PR summary requirements, and closeout process.
+    - path: ".references/**"
+      instructions: >
+        Treat these files as guidance/context. Flag implementation that contradicts the
+        technical spec or mapped backlog.
+    - path: "go.sum"
+      instructions: "Do not spend review attention on this file unless a dependency change is central to the PR."
+    - path: "CHANGELOG.md"
+      instructions: "Ignore routine changelog-only noise unless the PR is specifically about release documentation."
+
+  pre_merge_checks:
+    custom_checks:
+      - name: "Coverage threshold"
+        mode: "warning"
+        instructions: >
+          Verify that changed packages maintain at least 80% test coverage when production
+          code changes. If tests or coverage evidence are missing, call that out and suggest
+          concrete test gaps.
+      - name: "Architecture boundaries"
+        mode: "warning"
+        instructions: >
+          Ensure the CLI remains a thin adapter and analysis logic stays in engine/internal
+          packages. Flag violations clearly.
+      - name: "Deterministic output"
+        mode: "warning"
+        instructions: >
+          Check for non-deterministic output risks, especially map iteration ordering,
+          unstable sorting, or randomness that could affect engine results.
+      - name: "Task scope discipline"
+        mode: "warning"
+        instructions: >
+          Verify the PR remains limited to the mapped backlog task unless grouped work is
+          explicitly justified in the handoff.
+      - name: "Detector safety"
+        mode: "warning"
+        instructions: >
+          Flag logic that may panic, assumes missing signals cannot happen, or violates the
+          requirement for deterministic detector behavior.
+
+knowledge_base:
+  web_search:
+    enabled: true
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - ".references/tech-spec.md"
+      - ".ai/repo-map.md"
+      - ".ai/handoffs/template.md"
+      - ".ai/handoffs/pr-template.md"
+      - "**/CLAUDE.md"
+      - "**/AGENTS.md"
+
+chat:
+  auto_reply: true

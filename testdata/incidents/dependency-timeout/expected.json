@@ -1,0 +1,10 @@
+{
+  "issue_classes": [
+    "DependencyTimeout"
+  ],
+  "min_confidence": "high",
+  "required_evidence": [
+    "context deadline exceeded",
+    "timeout"
+  ]
+}

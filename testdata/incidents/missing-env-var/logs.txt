@@ -1,0 +1,3 @@
+2026-03-14T12:00:01Z ERROR required env REDIS_URL is not set
+2026-03-14T12:00:02Z ERROR missing environment variable JWT_SECRET
+2026-03-14T12:00:03Z panic: getenv DB_HOST returned empty value

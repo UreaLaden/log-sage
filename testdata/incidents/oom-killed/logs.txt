@@ -1,0 +1,4 @@
+2026-03-14T12:00:01Z ERROR runtime: out of memory
+2026-03-14T12:00:02Z WARN memory allocation failed for 134217728 bytes
+2026-03-14T12:00:03Z INFO container restarting after exit code 137
+2026-03-14T12:00:04Z ERROR OOMKilled by kernel

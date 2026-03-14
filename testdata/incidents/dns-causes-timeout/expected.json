@@ -1,0 +1,11 @@
+{
+  "issue_classes": [
+    "DNSFailure",
+    "DependencyTimeout"
+  ],
+  "min_confidence": "medium",
+  "required_evidence": [
+    "no such host",
+    "deadline exceeded"
+  ]
+}

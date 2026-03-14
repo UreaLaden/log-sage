@@ -1,0 +1,10 @@
+{
+  "issue_classes": [
+    "DiskFull"
+  ],
+  "min_confidence": "high",
+  "required_evidence": [
+    "no space left on device",
+    "ENOSPC"
+  ]
+}

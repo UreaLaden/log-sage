@@ -1,0 +1,3 @@
+2026-03-14T12:00:01Z ERROR lookup postgres.default.svc.cluster.local: no such host
+2026-03-14T12:00:02Z WARN retrying DNS lookup
+2026-03-14T12:00:03Z ERROR temporary failure in name resolution

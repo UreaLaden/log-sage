@@ -1,0 +1,5 @@
+2026-03-14T12:00:01Z INFO restoring dependencies
+2026-03-14T12:00:02Z ERROR npm ERR! code ETIMEDOUT
+2026-03-14T12:00:03Z ERROR npm ERR! network timeout at: https://registry.npmjs.org/react
+2026-03-14T12:00:04Z INFO retrying step install-deps
+2026-03-14T12:00:05Z ERROR context deadline exceeded while fetching dependency manifest

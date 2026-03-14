@@ -1,0 +1,5 @@
+2026-03-14T12:00:01Z INFO starting api pod=api-7f9c5 ns=default
+2026-03-14T12:00:02Z ERROR failed to connect to redis: connection refused pod=api-7f9c5 ns=default
+2026-03-14T12:00:03Z INFO retrying connection pod=api-7f9c5 ns=default
+2026-03-14T12:00:04Z ERROR readiness probe failed: Get http://10.42.0.8:8080/healthz: connection refused pod=api-7f9c5 ns=default
+2026-03-14T12:00:05Z WARN Back-off restarting failed container pod=api-7f9c5 ns=default
