@@ -1,0 +1,5 @@
+2026-03-14T12:00:01Z [ERROR] redis connection refused
+2026-03-14T12:00:02Z WARNING cache nearing memory limit
+2026-03-14T12:00:03Z level=debug starting worker
+2026-03-14T12:00:04Z panic runtime error: index out of range
+2026-03-14T12:00:05Z fatal unable to bind port 8080

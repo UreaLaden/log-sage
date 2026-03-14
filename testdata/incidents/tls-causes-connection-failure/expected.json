@@ -1,0 +1,10 @@
+{
+  "issue_classes": [
+    "TLSFailure"
+  ],
+  "min_confidence": "high",
+  "required_evidence": [
+    "x509",
+    "handshake failure"
+  ]
+}

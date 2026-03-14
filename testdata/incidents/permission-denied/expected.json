@@ -1,0 +1,10 @@
+{
+  "issue_classes": [
+    "PermissionDenied"
+  ],
+  "min_confidence": "high",
+  "required_evidence": [
+    "permission denied",
+    "EACCES"
+  ]
+}

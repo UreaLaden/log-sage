@@ -1,0 +1,10 @@
+{
+  "issue_classes": [
+    "MissingEnvVar"
+  ],
+  "min_confidence": "high",
+  "required_evidence": [
+    "required env",
+    "environment variable"
+  ]
+}

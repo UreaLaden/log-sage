@@ -101,7 +101,7 @@ Passing `go test ./...` alone is not sufficient if no task-specific tests were a
 When Codex adds or changes production code, it must measure test coverage for the affected production package(s).
 
 Minimum requirement:
-- changed production package(s) must maintain at least 80% test coverage
+- changed production package(s) must maintain at least 90% test coverage
 
 Required coverage workflow:
 1. Run `go test` for the affected package with coverage enabled
@@ -117,9 +117,9 @@ Codex must record in `.ai/handoffs/current.md`:
 - test files added or updated
 - coverage commands run
 - coverage % for affected package(s)
-- whether the 80% minimum was met
+- whether the 90% minimum was met
 
-If coverage is below 80%, Codex must:
+If coverage is below 90%, Codex must:
 - add tests until the threshold is met, or
 - stop and explicitly document why the threshold could not be met
 
@@ -142,3 +142,8 @@ If additional package-level coverage commands are required, they must also be ru
 ## Completion Output Rule
 
 When Codex completes an implementation task in this repository, the final response must include a suggested commit message, even if the user did not explicitly ask for one.
+
+The final response must also include short manual validation steps the user can run locally to spot-check the implemented behavior after automated verification succeeds.
+
+All CodeRabbit review comments must be evaluated using the CodeRabbit
+evaluation template before any changes are implemented.

@@ -1,0 +1,4 @@
+2026-03-14 12:00:01 ERROR missing timezone
+2026-03-14T12:00:02+00:00 INFO valid offset timestamp
+Mar 14 12:00:03 WARN syslog style timestamp
+not-a-timestamp ERROR random prefix

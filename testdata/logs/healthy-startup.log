@@ -1,0 +1,4 @@
+2026-03-14T12:00:01Z INFO starting web server
+2026-03-14T12:00:02Z INFO connected to redis
+2026-03-14T12:00:03Z INFO readiness probe passed
+2026-03-14T12:00:04Z INFO server listening on :8080

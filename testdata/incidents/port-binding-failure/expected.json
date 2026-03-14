@@ -1,0 +1,10 @@
+{
+  "issue_classes": [
+    "PortBindingFailure"
+  ],
+  "min_confidence": "high",
+  "required_evidence": [
+    "address already in use",
+    "EADDRINUSE"
+  ]
+}

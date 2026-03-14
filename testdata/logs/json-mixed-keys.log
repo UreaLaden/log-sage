@@ -1,0 +1,3 @@
+{"@timestamp":"2026-03-14T12:00:01Z","log.level":"ERROR","message":"certificate signed by unknown authority","service":"worker"}
+{"ts":"2026-03-14T12:00:02Z","severity":"warn","msg":"retrying TLS handshake","service":"worker"}
+{"timestamp":"2026-03-14T12:00:03Z","level":"INFO","event":"backoff complete","service":"worker"}

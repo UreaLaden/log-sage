@@ -1,0 +1,3 @@
+2026-03-14T12:00:01Z ERROR x509: certificate signed by unknown authority
+2026-03-14T12:00:02Z WARN tls: handshake failure
+2026-03-14T12:00:03Z INFO retrying secure connection

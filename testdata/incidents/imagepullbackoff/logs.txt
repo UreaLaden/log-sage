@@ -1,0 +1,4 @@
+2026-03-14T12:00:01Z WARN Failed to pull image "ghcr.io/example/api:badtag"
+2026-03-14T12:00:02Z ERROR ErrImagePull
+2026-03-14T12:00:03Z WARN ImagePullBackOff
+2026-03-14T12:00:04Z ERROR pull access denied for ghcr.io/example/api

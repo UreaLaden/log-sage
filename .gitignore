@@ -1,3 +1,4 @@
 .ai
 .references
 *.exe
+coverage.out

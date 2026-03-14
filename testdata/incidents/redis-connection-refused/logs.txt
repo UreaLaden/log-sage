@@ -1,0 +1,5 @@
+2026-03-14T12:00:01Z ERROR dial tcp 10.3.0.14:6379: connect: connection refused
+2026-03-14T12:00:02Z INFO retrying redis connection
+2026-03-14T12:00:03Z ERROR redis connection refused
+2026-03-14T12:00:04Z WARN request failed due to cache dependency
+2026-03-14T12:00:05Z ERROR ECONNREFUSED redis.default.svc.cluster.local:6379
