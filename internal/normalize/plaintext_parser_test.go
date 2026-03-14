@@ -1,6 +1,10 @@
 package normalize
 
 import (
+	"bufio"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -125,6 +129,108 @@ func TestParsePlaintext(t *testing.T) {
 
 			if tt.wantNil && got.Fields != nil {
 				t.Fatalf("Fields = %#v, want nil", got.Fields)
+			}
+		})
+	}
+}
+
+func TestParsePlaintextDatasets(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		file     string
+		validate func(t *testing.T, file string, lineNo int, raw string, entry LogEntry)
+	}{
+		{
+			name: "plaintext basic logs",
+			file: "plaintext-basic.log",
+			validate: func(t *testing.T, file string, lineNo int, raw string, entry LogEntry) {
+				t.Helper()
+
+				if entry.Raw != raw {
+					t.Fatalf("file=%s line=%d raw=%q: expected raw preservation, got %q", file, lineNo, raw, entry.Raw)
+				}
+				if entry.Timestamp == nil {
+					t.Fatalf("file=%s line=%d raw=%q: expected timestamp, got nil", file, lineNo, raw)
+				}
+				if strings.TrimSpace(entry.Message) == "" {
+					t.Fatalf("file=%s line=%d raw=%q: expected non-empty message", file, lineNo, raw)
+				}
+				if entry.Message != strings.TrimSpace(entry.Message) {
+					t.Fatalf("file=%s line=%d raw=%q: expected trimmed message, got %q", file, lineNo, raw, entry.Message)
+				}
+				if entry.Level != "" && entry.Level != "error" && entry.Level != "info" {
+					t.Fatalf("file=%s line=%d raw=%q: expected level error/info/empty, got %q", file, lineNo, raw, entry.Level)
+				}
+				if strings.Contains(entry.Message, "ERROR ") || strings.Contains(entry.Message, "INFO ") {
+					t.Fatalf("file=%s line=%d raw=%q: expected message without level token, got %q", file, lineNo, raw, entry.Message)
+				}
+			},
+		},
+		{
+			name: "plaintext level variants",
+			file: "plaintext-level-variants.log",
+			validate: func(t *testing.T, file string, lineNo int, raw string, entry LogEntry) {
+				t.Helper()
+
+				wantLevels := map[int]string{
+					1: "error",
+					2: "warn",
+					3: "debug",
+					4: "panic",
+					5: "fatal",
+				}
+
+				wantMessages := map[int]string{
+					1: "redis connection refused",
+					2: "cache nearing memory limit",
+					3: "starting worker",
+					4: "runtime error: index out of range",
+					5: "unable to bind port 8080",
+				}
+
+				if entry.Raw != raw {
+					t.Fatalf("file=%s line=%d raw=%q: expected raw preservation, got %q", file, lineNo, raw, entry.Raw)
+				}
+				if entry.Timestamp == nil {
+					t.Fatalf("file=%s line=%d raw=%q: expected timestamp, got nil", file, lineNo, raw)
+				}
+				if want := wantLevels[lineNo]; entry.Level != want {
+					t.Fatalf("file=%s line=%d raw=%q: expected level %q, got %q", file, lineNo, raw, want, entry.Level)
+				}
+				if want := wantMessages[lineNo]; entry.Message != want {
+					t.Fatalf("file=%s line=%d raw=%q: expected message %q, got %q", file, lineNo, raw, want, entry.Message)
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			path := filepath.Join("..", "..", "testdata", "logs", tt.file)
+			file, err := os.Open(path)
+			if err != nil {
+				t.Fatalf("file=%s open error: %v", tt.file, err)
+			}
+			defer file.Close()
+
+			scanner := bufio.NewScanner(file)
+			for i := 1; scanner.Scan(); i++ {
+				raw := scanner.Text()
+				if strings.TrimSpace(raw) == "" {
+					continue
+				}
+
+				entry := ParsePlaintext(raw)
+				tt.validate(t, tt.file, i, raw, entry)
+			}
+
+			if err := scanner.Err(); err != nil {
+				t.Fatalf("file=%s scan error: %v", tt.file, err)
 			}
 		})
 	}
