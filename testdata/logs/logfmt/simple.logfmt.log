@@ -1,0 +1,4 @@
+level=info msg="starting worker"
+
+level=warn msg="cache nearing memory limit"
+level=error msg="redis connection refused"

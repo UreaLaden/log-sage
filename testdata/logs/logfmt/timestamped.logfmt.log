@@ -1,0 +1,3 @@
+timestamp=2026-03-14T12:00:00Z level=info msg="starting worker" component=server
+time=2026-03-14T12:00:01Z level=warn msg="cache nearing memory limit" component=cache
+ts=2026-03-14T12:00:02Z level=error message="redis connection refused" component=redis
