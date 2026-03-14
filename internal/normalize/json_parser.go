@@ -21,8 +21,11 @@ func ParseJSON(line string) (LogEntry, error) {
 		return entry, errJSONNotObject
 	}
 
+	decoder := json.NewDecoder(strings.NewReader(trimmed))
+	decoder.UseNumber()
+
 	var decoded any
-	if err := json.Unmarshal([]byte(trimmed), &decoded); err != nil {
+	if err := decoder.Decode(&decoded); err != nil {
 		return entry, err
 	}
 
@@ -66,6 +69,8 @@ func stringifyJSONValue(value any) string {
 			return "true"
 		}
 		return "false"
+	case json.Number:
+		return typed.String()
 	case float64:
 		return fmt.Sprintf("%v", typed)
 	default:

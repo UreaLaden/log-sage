@@ -87,6 +87,15 @@ func TestParseJSON(t *testing.T) {
 			},
 		},
 		{
+			name:        "large integer preserved exactly",
+			input:       `{"message":"retrying","request_id":9007199254740993}`,
+			wantMessage: "retrying",
+			wantFields: map[string]string{
+				"message":    "retrying",
+				"request_id": "9007199254740993",
+			},
+		},
+		{
 			name:        "fallback message uses compact json",
 			input:       ` { "service":"api", "ok":true } `,
 			wantMessage: `{"service":"api","ok":true}`,
