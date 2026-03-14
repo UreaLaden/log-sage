@@ -202,3 +202,20 @@ Flags: `--json`, `--quiet`, `--top N`, `--namespace`
 ## Spec
 
 Full MVP technical specification: `.references/tech-spec.md`
+
+## Required Task Closeout
+
+When a mapped task has been implemented, verified, and is ready to close, Claude must perform the following closeout steps before finishing:
+
+1. Read `.ai/handoffs/current.md`
+2. Read `.ai/handoffs/pr-template.md`
+3. Generate a completed PR summary with no placeholders
+4. Write the result to `.ai/handoffs/pr-summary.md`
+
+This is required whenever:
+- implementation is complete
+- verification commands have passed
+- required test coverage has been recorded
+- the task is ready to close
+
+The PR summary must be grounded only in the active handoff and repository artifacts. Do not invent scope, verification, or coverage details.
