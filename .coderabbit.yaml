@@ -31,6 +31,23 @@ reviews:
       instructions: >
         Review shared public contracts carefully for backward-compatibility, naming clarity,
         and spec alignment.
+    - path: "**/*_test.go"
+      instructions: >
+        Prioritize correctness, determinism, coverage, and regression risk.
+        Do not suggest refactors purely for style, table-driven consolidation,
+        helper extraction, or fixture relocation unless there is substantial
+        duplication, a real maintainability problem, or a correctness issue.
+        Preserve behavior-specific tests when separate tests improve clarity.
+    - path: "testdata/logs/**"
+      instructions: >
+        Treat these as parser-level and normalization-level fixtures.
+        Do not suggest moving them to testdata/incidents unless the PR is
+        explicitly implementing the incident corpus layer.
+    - path: "testdata/incidents/**"
+      instructions: >
+        Treat these as incident corpus and higher-level integration fixtures.
+        Do not require parser-level tests to use this directory unless the
+        backlog task explicitly targets corpus integration.
     - path: ".ai/**"
       instructions: >
         Verify workflow artifacts remain consistent with the active task, handoff template,
@@ -49,14 +66,16 @@ reviews:
       - name: "Coverage threshold"
         mode: "warning"
         instructions: >
-          Verify that changed packages maintain at least 90% test coverage when production
-          code changes. If tests or coverage evidence are missing, call that out and suggest
-          concrete test gaps.
+          Verify that changed production packages maintain at least 90% test coverage.
+          For test-only PRs, verify that coverage evidence is still provided when the
+          active workflow requires it. If tests or coverage evidence are missing, call
+          that out and suggest concrete test gaps.
       - name: "Architecture boundaries"
         mode: "warning"
         instructions: >
           Ensure the CLI remains a thin adapter and analysis logic stays in engine/internal
-          packages. Flag violations clearly.
+          packages. Flag violations clearly. When workflow artifacts are changed, also
+          verify task mapping and status consistency.
       - name: "Deterministic output"
         mode: "warning"
         instructions: >
@@ -66,7 +85,9 @@ reviews:
         mode: "warning"
         instructions: >
           Verify the PR remains limited to the mapped backlog task unless grouped work is
-          explicitly justified in the handoff.
+          explicitly justified in the handoff. Prefer the smallest fix that resolves a
+          verified issue, and avoid recommending broad refactors, file moves, or stylistic
+          cleanup unless required for correctness, determinism, maintainability, or explicit scope.
       - name: "Detector safety"
         mode: "warning"
         instructions: >
@@ -75,7 +96,7 @@ reviews:
 
 knowledge_base:
   web_search:
-    enabled: true
+    enabled: false
   code_guidelines:
     enabled: true
     filePatterns:
