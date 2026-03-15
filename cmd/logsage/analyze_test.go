@@ -252,6 +252,133 @@ func TestAnalyzeCmdQuiet(t *testing.T) {
 	})
 }
 
+func TestAnalyzeCmdTop(t *testing.T) {
+	t.Parallel()
+
+	multiCauseLog := "CrashLoopBackOff\nOOMKilled\n"
+
+	t.Run("top 1 human output includes only highest-ranked cause", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "multi.log")
+		if err := os.WriteFile(path, []byte(multiCauseLog), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--top", "1", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		output := stdout.String()
+		if !strings.Contains(output, "OutOfMemory (high confidence)") {
+			t.Fatalf("output = %q, want top-ranked cause", output)
+		}
+		if strings.Contains(output, "CrashLoopBackOff") {
+			t.Fatalf("output = %q, did not expect lower-ranked cause", output)
+		}
+	})
+
+	t.Run("top 0 preserves all results", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "multi.log")
+		if err := os.WriteFile(path, []byte(multiCauseLog), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--top", "0", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		output := stdout.String()
+		if !strings.Contains(output, "OutOfMemory (high confidence)") || !strings.Contains(output, "CrashLoopBackOff") {
+			t.Fatalf("output = %q, want both causes", output)
+		}
+	})
+
+	t.Run("top negative returns error", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "oom.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		cmd.SetArgs([]string{"--top", "-1", path})
+
+		err := cmd.Execute()
+		if err == nil {
+			t.Fatal("Execute() error = nil, want non-nil")
+		}
+		if !strings.Contains(err.Error(), "--top must be a positive integer") {
+			t.Fatalf("error = %q, want top validation message", err.Error())
+		}
+	})
+
+	t.Run("top 1 json returns one top cause", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "multi.log")
+		if err := os.WriteFile(path, []byte(multiCauseLog), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--json", "--top", "1", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		var result types.AnalysisResult
+		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+			t.Fatalf("json.Unmarshal() error = %v, want nil; output=%q", err, stdout.String())
+		}
+		if len(result.TopCauses) != 1 {
+			t.Fatalf("len(TopCauses) = %d, want 1", len(result.TopCauses))
+		}
+	})
+
+	t.Run("top 1 quiet prints one cause line", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "multi.log")
+		if err := os.WriteFile(path, []byte(multiCauseLog), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--quiet", "--top", "1", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+		if got := stdout.String(); got != "OutOfMemory: high confidence\n" {
+			t.Fatalf("output = %q, want %q", got, "OutOfMemory: high confidence\n")
+		}
+	})
+}
+
 func TestAnalyzeCmdErrorPaths(t *testing.T) {
 	t.Parallel()
 

@@ -14,6 +14,7 @@ func newAnalyzeCmd() *cobra.Command {
 	var fromStdin bool
 	var asJSON bool
 	var quiet bool
+	var topN int
 
 	cmd := &cobra.Command{
 		Use:   "analyze [<file>]",
@@ -55,6 +56,19 @@ func newAnalyzeCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if topN < 0 {
+				return fmt.Errorf("--top must be a positive integer")
+			}
+			if topN > 0 && topN < len(result.TopCauses) {
+				truncated := append([]types.Hypothesis(nil), result.TopCauses[:topN]...)
+				result = &types.AnalysisResult{
+					Summary:              result.Summary,
+					TopCauses:            truncated,
+					Unknowns:             result.Unknowns,
+					RecommendedCommands:  result.RecommendedCommands,
+					RecommendedNextSteps: result.RecommendedNextSteps,
+				}
+			}
 
 			switch {
 			case asJSON:
@@ -70,6 +84,7 @@ func newAnalyzeCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&fromStdin, "stdin", false, "Read log input from stdin")
 	cmd.Flags().BoolVar(&asJSON, "json", false, "Output results as JSON")
 	cmd.Flags().BoolVar(&quiet, "quiet", false, "Output a compact one-line summary per issue")
+	cmd.Flags().IntVar(&topN, "top", 0, "Limit output to top N results (0 = all)")
 
 	return cmd
 }

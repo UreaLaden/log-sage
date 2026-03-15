@@ -136,6 +136,33 @@ func TestCICmdQuiet(t *testing.T) {
 	}
 }
 
+func TestCICmdTop(t *testing.T) {
+	t.Parallel()
+
+	path := filepath.Join(t.TempDir(), "ci.log")
+	log := "CrashLoopBackOff\nOOMKilled\n"
+	if err := os.WriteFile(path, []byte(log), 0o644); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	cmd := newCICmd()
+	var stdout bytes.Buffer
+	cmd.SetOut(&stdout)
+	cmd.SetArgs([]string{"--top", "1", path})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v, want nil", err)
+	}
+
+	output := stdout.String()
+	if !strings.Contains(output, "OutOfMemory (high confidence)") {
+		t.Fatalf("output = %q, want top-ranked cause", output)
+	}
+	if strings.Contains(output, "CrashLoopBackOff") {
+		t.Fatalf("output = %q, did not expect lower-ranked cause", output)
+	}
+}
+
 func TestCICmdRootRegistration(t *testing.T) {
 	t.Parallel()
 
