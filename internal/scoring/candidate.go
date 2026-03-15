@@ -24,4 +24,8 @@ type CandidateHypothesis struct {
 	// IsSymptom marks whether this hypothesis represents a secondary symptom
 	// rather than the primary root cause.
 	IsSymptom bool
+
+	// Confidence is the mapped confidence level for this hypothesis,
+	// populated by MapConfidence. Zero value means not yet mapped.
+	Confidence types.ConfidenceLevel
 }
