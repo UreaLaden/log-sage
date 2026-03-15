@@ -1,11 +1,13 @@
 package types
 
 // SignalPattern defines a reusable extraction rule that identifies a specific
-// signal in normalized log content.
+// signal in normalized log content. Weight determines the pattern's
+// contribution to the base detection score.
 type SignalPattern struct {
 	Name            string
 	SignalType      string
 	MatchExpression string
+	Weight          float64
 }
 
 // PatternMatch records one concrete occurrence of a SignalPattern in log
