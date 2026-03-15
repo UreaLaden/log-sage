@@ -47,6 +47,8 @@ func newRootCmd() *cobra.Command {
 
 	rootCmd.Flags().BoolVarP(&showVersion, "version", "v", false, "Print the logsage version")
 	rootCmd.AddCommand(newAnalyzeCmd())
+	rootCmd.AddCommand(newCICmd())
+	rootCmd.AddCommand(newK8sCmd())
 	rootCmd.AddCommand(newVersionCmd())
 
 	return rootCmd
