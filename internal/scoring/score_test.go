@@ -138,6 +138,44 @@ func TestBuildCandidates(t *testing.T) {
 	}
 }
 
+func TestBuildCandidatesInputIsolation(t *testing.T) {
+	t.Parallel()
+
+	hypotheses := []types.Hypothesis{
+		{
+			IssueClass: "OutOfMemory",
+			Score:      1.5,
+			Evidence: []types.Evidence{
+				{Signal: "oom-killed", Occurrences: 2, Examples: []string{"OOMKilled: container exceeded memory limit"}},
+			},
+		},
+	}
+	signals := types.SignalSet{
+		Matches: []types.PatternMatch{{PatternName: "oom-killed", Text: "OOMKilled"}},
+	}
+
+	got := BuildCandidates(hypotheses, signals)
+
+	// Mutate inputs after the call.
+	hypotheses[0].Evidence[0].Signal = "mutated-evidence"
+	hypotheses[0].Evidence[0].Examples[0] = "mutated-example"
+	signals.Matches[0].PatternName = "mutated-pattern"
+	signals.Matches[0].Text = "mutated-signal"
+
+	if got[0].Evidence[0].Signal != "oom-killed" {
+		t.Fatalf("candidate Evidence was aliased to input: got %q, want %q", got[0].Evidence[0].Signal, "oom-killed")
+	}
+	if got[0].Evidence[0].Examples[0] != "OOMKilled: container exceeded memory limit" {
+		t.Fatalf("candidate Evidence examples were aliased to input: got %q, want %q", got[0].Evidence[0].Examples[0], "OOMKilled: container exceeded memory limit")
+	}
+	if got[0].Signals.Matches[0].PatternName != "oom-killed" {
+		t.Fatalf("candidate Signals pattern was aliased to input: got %q, want %q", got[0].Signals.Matches[0].PatternName, "oom-killed")
+	}
+	if got[0].Signals.Matches[0].Text != "OOMKilled" {
+		t.Fatalf("candidate Signals was aliased to input: got %q, want %q", got[0].Signals.Matches[0].Text, "OOMKilled")
+	}
+}
+
 func gotInputEvidence() []types.Evidence {
 	return []types.Evidence{
 		{Signal: "imagepullbackoff", Occurrences: 1, Examples: []string{"ImagePullBackOff: back-off pulling image"}},
@@ -167,17 +205,4 @@ func cloneHypotheses(hypotheses []types.Hypothesis) []types.Hypothesis {
 	}
 
 	return cloned
-}
-
-func cloneSignalSet(signals types.SignalSet) types.SignalSet {
-	if signals.Matches == nil {
-		return types.SignalSet{}
-	}
-
-	clonedMatches := make([]types.PatternMatch, len(signals.Matches))
-	copy(clonedMatches, signals.Matches)
-
-	return types.SignalSet{
-		Matches: clonedMatches,
-	}
 }
