@@ -1,3 +1,5 @@
+version: "2"
+
 run:
   timeout: 5m
 
@@ -9,6 +11,9 @@ linters:
     - ineffassign
     - errcheck
     - unused
+
+formatters:
+  enable:
     - gofmt
     - goimports
 
