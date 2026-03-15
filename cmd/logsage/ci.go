@@ -27,8 +27,8 @@ func newCICmd() *cobra.Command {
 			}()
 
 			result, err := engine.New().Analyze(cmd.Context(), types.DiagnosticInput{
-				Reader:   file,
-				Metadata: map[string]string{"source_type": "ci"},
+				Reader:     file,
+				SourceType: "ci",
 			})
 			if err != nil {
 				return err
