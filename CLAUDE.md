@@ -22,6 +22,18 @@ Load conditionally:
 
 After loading, confirm context is loaded and wait for the task.
 
+## User shorthand
+
+| What the user says | What it means |
+|---|---|
+| "review the handoff" / "review latest handoff" / "review current.md" | Read `.ai/handoffs/current.md` and evaluate the completed work |
+
+## Always reference current.md
+
+Before answering any question about task status, what was completed, or what to work on next,
+always read `.ai/handoffs/current.md` first. Do not rely on prior conversation context for
+task state — the file is the source of truth.
+
 ## Handoff protocol
 
 All handoff records must follow the structure defined in `.ai/handoffs/template.md`.
