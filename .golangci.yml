@@ -5,7 +5,14 @@ linters:
   enable:
     - govet
     - staticcheck
+    - revive
+    - ineffassign
     - errcheck
     - unused
-    - gofmt
-    - goimports
+
+linters-settings:
+  revive:
+    severity: warning
+
+issues:
+  exclude-use-default: false
