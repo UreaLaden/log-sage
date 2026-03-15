@@ -239,7 +239,11 @@ func TestParseJSONDatasets(t *testing.T) {
 			if err != nil {
 				t.Fatalf("file=%s open error: %v", tt.file, err)
 			}
-			defer file.Close()
+			defer func() {
+				if err := file.Close(); err != nil {
+					t.Errorf("close file: %v", err)
+				}
+			}()
 
 			scanner := bufio.NewScanner(file)
 			seenLevel := make(map[string]bool, len(tt.wantLevels))

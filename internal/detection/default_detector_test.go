@@ -239,9 +239,6 @@ func TestDefaultDetectorDetect(t *testing.T) {
 			tt.validate(t, got)
 
 			if !reflect.DeepEqual(tt.signals, originalSignals) {
-				if len(tt.signals.Matches) == 0 && len(originalSignals.Matches) == 0 {
-					return
-				}
 				t.Fatalf("signals mutated: got %#v, want %#v", tt.signals, originalSignals)
 			}
 		})
@@ -249,6 +246,10 @@ func TestDefaultDetectorDetect(t *testing.T) {
 }
 
 func cloneSignalSet(signals types.SignalSet) types.SignalSet {
+	if signals.Matches == nil {
+		return types.SignalSet{}
+	}
+
 	clonedMatches := make([]types.PatternMatch, len(signals.Matches))
 	copy(clonedMatches, signals.Matches)
 

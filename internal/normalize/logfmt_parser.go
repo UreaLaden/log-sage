@@ -110,7 +110,7 @@ func tokenizeLogfmt(line string) []logfmtField {
 		if i < len(line) && line[i] == '"' {
 			i++
 			var builder strings.Builder
-			closed := false
+		quotedValue:
 			for i < len(line) {
 				switch line[i] {
 				case '\\':
@@ -122,14 +122,10 @@ func tokenizeLogfmt(line string) []logfmtField {
 					i++
 				case '"':
 					i++
-					closed = true
-					break
+					break quotedValue
 				default:
 					builder.WriteByte(line[i])
 					i++
-				}
-				if closed {
-					break
 				}
 			}
 			value = builder.String()

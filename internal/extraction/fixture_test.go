@@ -152,7 +152,11 @@ func loadFixtureEntries(t *testing.T, fixture string) []normalize.Line {
 	if err != nil {
 		t.Fatalf("open fixture %q: %v", fixture, err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			t.Errorf("close file: %v", err)
+		}
+	}()
 
 	entries, err := normalize.Normalize(context.Background(), file)
 	if err != nil {

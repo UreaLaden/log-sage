@@ -155,9 +155,14 @@ Missing doc comments on exported symbols are a required fix, not optional style.
 
 After implementation, Codex must run the verification commands required by the task prompt.
 
+Codex must also run `make run-lint` at the end of every task as the final
+verification step, unless the task is explicitly blocked before verification can
+be completed.
+
 At minimum, for normal Go implementation tasks:
 - `go test ./...`
 - `go build ./cmd/logsage`
+- `make run-lint`
 
 If additional package-level coverage commands are required, they must also be run and recorded in the handoff.
 

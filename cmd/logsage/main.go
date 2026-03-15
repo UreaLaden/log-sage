@@ -11,7 +11,7 @@ const version = "0.0.0-dev"
 
 func main() {
 	if err := newRootCmd().Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		_, _ = fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
@@ -27,7 +27,9 @@ func newRootCmd() *cobra.Command {
 		Version:       version,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if showVersion {
-				fmt.Fprintln(cmd.OutOrStdout(), cmd.Version)
+				if _, err := fmt.Fprintln(cmd.OutOrStdout(), cmd.Version); err != nil {
+					return err
+				}
 				return nil
 			}
 
@@ -45,8 +47,11 @@ func newVersionCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Print the logsage version",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintln(cmd.OutOrStdout(), version)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if _, err := fmt.Fprintln(cmd.OutOrStdout(), version); err != nil {
+				return err
+			}
+			return nil
 		},
 	}
 }
