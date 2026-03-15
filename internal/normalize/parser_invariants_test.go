@@ -91,7 +91,11 @@ func TestParserInvariants(t *testing.T) {
 				if err != nil {
 					t.Fatalf("parser=logfmt file=%s: open error = %v", tt.file, err)
 				}
-				defer file.Close()
+				defer func() {
+					if err := file.Close(); err != nil {
+						t.Errorf("close file: %v", err)
+					}
+				}()
 
 				entries, err := ParseLogfmt(context.Background(), file)
 				if err != nil {
@@ -117,7 +121,11 @@ func readNonEmptyLines(t *testing.T, path string) []string {
 	if err != nil {
 		t.Fatalf("open %s: %v", path, err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			t.Errorf("close file: %v", err)
+		}
+	}()
 
 	scanner := bufio.NewScanner(file)
 	scanner.Buffer(make([]byte, 0, 64*1024), 1024*1024)

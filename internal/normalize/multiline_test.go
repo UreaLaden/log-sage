@@ -16,7 +16,11 @@ func TestGroupMultilineDataset(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open stacktrace fixture: %v", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			t.Errorf("close file: %v", err)
+		}
+	}()
 
 	lines, err := Normalize(context.Background(), file)
 	if err != nil {
