@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"os"
@@ -113,6 +114,73 @@ func TestAnalyzeCmd(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAnalyzeCmdJSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("json with oom log is valid and contains top causes", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "oom.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--json", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		var result types.AnalysisResult
+		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+			t.Fatalf("json.Unmarshal() error = %v, want nil; output=%q", err, stdout.String())
+		}
+		if len(result.TopCauses) == 0 {
+			t.Fatalf("TopCauses = %v, want non-empty", result.TopCauses)
+		}
+		if result.TopCauses[0].IssueClass != "OutOfMemory" {
+			t.Fatalf("TopCauses[0].IssueClass = %q, want %q", result.TopCauses[0].IssueClass, "OutOfMemory")
+		}
+		if !strings.Contains(stdout.String(), "\"TopCauses\"") {
+			t.Fatalf("output = %q, want TopCauses key", stdout.String())
+		}
+	})
+
+	t.Run("json with empty log returns valid json with empty top causes", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "empty.log")
+		if err := os.WriteFile(path, []byte(""), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--json", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		var result types.AnalysisResult
+		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+			t.Fatalf("json.Unmarshal() error = %v, want nil; output=%q", err, stdout.String())
+		}
+		if result.TopCauses == nil {
+			t.Fatalf("TopCauses = nil, want empty slice")
+		}
+		if len(result.TopCauses) != 0 {
+			t.Fatalf("len(TopCauses) = %d, want 0", len(result.TopCauses))
+		}
+	})
 }
 
 func TestAnalyzeCmdErrorPaths(t *testing.T) {

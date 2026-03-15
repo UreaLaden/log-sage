@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -77,4 +78,10 @@ func printResult(w io.Writer, result *types.AnalysisResult) error {
 	}
 
 	return nil
+}
+
+func printJSON(w io.Writer, result *types.AnalysisResult) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(result)
 }

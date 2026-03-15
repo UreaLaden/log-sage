@@ -10,7 +10,9 @@ import (
 )
 
 func newCICmd() *cobra.Command {
-	return &cobra.Command{
+	var asJSON bool
+
+	cmd := &cobra.Command{
 		Use:   "ci <log-file>",
 		Short: "Analyze a CI log file and report likely root causes",
 		Args:  cobra.ExactArgs(1),
@@ -34,7 +36,15 @@ func newCICmd() *cobra.Command {
 				return err
 			}
 
+			if asJSON {
+				return printJSON(cmd.OutOrStdout(), result)
+			}
+
 			return printResult(cmd.OutOrStdout(), result)
 		},
 	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output results as JSON")
+
+	return cmd
 }

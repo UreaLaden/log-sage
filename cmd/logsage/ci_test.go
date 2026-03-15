@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Urealaden/log-sage-temp/pkg/types"
 )
 
 func TestCICmd(t *testing.T) {
@@ -78,6 +81,36 @@ func TestCICmd(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestCICmdJSON(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "ci.log")
+	if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	cmd := newCICmd()
+	var stdout bytes.Buffer
+	cmd.SetOut(&stdout)
+	cmd.SetArgs([]string{"--json", path})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v, want nil", err)
+	}
+
+	var result types.AnalysisResult
+	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v, want nil; output=%q", err, stdout.String())
+	}
+	if len(result.TopCauses) == 0 {
+		t.Fatalf("TopCauses = %v, want non-empty", result.TopCauses)
+	}
+	if result.TopCauses[0].IssueClass != "OutOfMemory" {
+		t.Fatalf("TopCauses[0].IssueClass = %q, want %q", result.TopCauses[0].IssueClass, "OutOfMemory")
 	}
 }
 

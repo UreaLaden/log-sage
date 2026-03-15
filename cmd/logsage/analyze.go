@@ -12,6 +12,7 @@ import (
 
 func newAnalyzeCmd() *cobra.Command {
 	var fromStdin bool
+	var asJSON bool
 
 	cmd := &cobra.Command{
 		Use:   "analyze [<file>]",
@@ -50,11 +51,16 @@ func newAnalyzeCmd() *cobra.Command {
 				return err
 			}
 
+			if asJSON {
+				return printJSON(cmd.OutOrStdout(), result)
+			}
+
 			return printResult(cmd.OutOrStdout(), result)
 		},
 	}
 
 	cmd.Flags().BoolVar(&fromStdin, "stdin", false, "Read log input from stdin")
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output results as JSON")
 
 	return cmd
 }
