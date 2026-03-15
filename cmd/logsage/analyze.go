@@ -13,6 +13,7 @@ import (
 func newAnalyzeCmd() *cobra.Command {
 	var fromStdin bool
 	var asJSON bool
+	var quiet bool
 
 	cmd := &cobra.Command{
 		Use:   "analyze [<file>]",
@@ -27,6 +28,10 @@ func newAnalyzeCmd() *cobra.Command {
 			return cobra.ExactArgs(1)(cmd, args)
 		},
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			if asJSON && quiet {
+				return fmt.Errorf("--json and --quiet are mutually exclusive")
+			}
+
 			var reader io.Reader
 			if fromStdin {
 				reader = cmd.InOrStdin()
@@ -51,16 +56,20 @@ func newAnalyzeCmd() *cobra.Command {
 				return err
 			}
 
-			if asJSON {
+			switch {
+			case asJSON:
 				return printJSON(cmd.OutOrStdout(), result)
+			case quiet:
+				return printQuiet(cmd.OutOrStdout(), result)
+			default:
+				return printResult(cmd.OutOrStdout(), result)
 			}
-
-			return printResult(cmd.OutOrStdout(), result)
 		},
 	}
 
 	cmd.Flags().BoolVar(&fromStdin, "stdin", false, "Read log input from stdin")
 	cmd.Flags().BoolVar(&asJSON, "json", false, "Output results as JSON")
+	cmd.Flags().BoolVar(&quiet, "quiet", false, "Output a compact one-line summary per issue")
 
 	return cmd
 }

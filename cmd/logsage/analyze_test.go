@@ -183,6 +183,75 @@ func TestAnalyzeCmdJSON(t *testing.T) {
 	})
 }
 
+func TestAnalyzeCmdQuiet(t *testing.T) {
+	t.Parallel()
+
+	t.Run("quiet with oom log prints one-line summary", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "oom.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--quiet", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+		if got := stdout.String(); got != "OutOfMemory: high confidence\n" {
+			t.Fatalf("output = %q, want %q", got, "OutOfMemory: high confidence\n")
+		}
+	})
+
+	t.Run("quiet with empty log prints no issues", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "empty.log")
+		if err := os.WriteFile(path, []byte(""), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--quiet", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+		if got := stdout.String(); got != "No issues detected.\n" {
+			t.Fatalf("output = %q, want %q", got, "No issues detected.\n")
+		}
+	})
+
+	t.Run("quiet and json are mutually exclusive", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "oom.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		cmd.SetArgs([]string{"--quiet", "--json", path})
+
+		err := cmd.Execute()
+		if err == nil {
+			t.Fatal("Execute() error = nil, want non-nil")
+		}
+		if err.Error() != "--json and --quiet are mutually exclusive" {
+			t.Fatalf("error = %q, want %q", err.Error(), "--json and --quiet are mutually exclusive")
+		}
+	})
+}
+
 func TestAnalyzeCmdErrorPaths(t *testing.T) {
 	t.Parallel()
 

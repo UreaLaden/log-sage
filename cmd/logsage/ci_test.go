@@ -114,6 +114,28 @@ func TestCICmdJSON(t *testing.T) {
 	}
 }
 
+func TestCICmdQuiet(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "ci.log")
+	if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	cmd := newCICmd()
+	var stdout bytes.Buffer
+	cmd.SetOut(&stdout)
+	cmd.SetArgs([]string{"--quiet", path})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v, want nil", err)
+	}
+	if got := stdout.String(); got != "OutOfMemory: high confidence\n" {
+		t.Fatalf("output = %q, want %q", got, "OutOfMemory: high confidence\n")
+	}
+}
+
 func TestCICmdRootRegistration(t *testing.T) {
 	t.Parallel()
 

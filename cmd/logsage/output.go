@@ -85,3 +85,18 @@ func printJSON(w io.Writer, result *types.AnalysisResult) error {
 	enc.SetIndent("", "  ")
 	return enc.Encode(result)
 }
+
+func printQuiet(w io.Writer, result *types.AnalysisResult) error {
+	if len(result.TopCauses) == 0 {
+		_, err := fmt.Fprintf(w, "No issues detected.\n")
+		return err
+	}
+
+	for _, cause := range result.TopCauses {
+		if _, err := fmt.Fprintf(w, "%s: %s confidence\n", cause.IssueClass, cause.Confidence); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

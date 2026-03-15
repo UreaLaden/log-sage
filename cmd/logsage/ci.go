@@ -11,12 +11,17 @@ import (
 
 func newCICmd() *cobra.Command {
 	var asJSON bool
+	var quiet bool
 
 	cmd := &cobra.Command{
 		Use:   "ci <log-file>",
 		Short: "Analyze a CI log file and report likely root causes",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			if asJSON && quiet {
+				return fmt.Errorf("--json and --quiet are mutually exclusive")
+			}
+
 			file, err := os.Open(args[0])
 			if err != nil {
 				return fmt.Errorf("open %s: %w", args[0], err)
@@ -36,15 +41,19 @@ func newCICmd() *cobra.Command {
 				return err
 			}
 
-			if asJSON {
+			switch {
+			case asJSON:
 				return printJSON(cmd.OutOrStdout(), result)
+			case quiet:
+				return printQuiet(cmd.OutOrStdout(), result)
+			default:
+				return printResult(cmd.OutOrStdout(), result)
 			}
-
-			return printResult(cmd.OutOrStdout(), result)
 		},
 	}
 
 	cmd.Flags().BoolVar(&asJSON, "json", false, "Output results as JSON")
+	cmd.Flags().BoolVar(&quiet, "quiet", false, "Output a compact one-line summary per issue")
 
 	return cmd
 }
