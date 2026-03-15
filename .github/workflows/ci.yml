@@ -26,19 +26,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417
         with:
           go-version-file: go.mod
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20
         with:
           version: latest
           args: --timeout=5m --out-format=github-actions
 
   govulncheck:
     name: govulncheck
-    runs-ont: ubuntu-latest
+    runs-on: ubuntu-latest
 
     steps:
       - id: govulncheck

@@ -9,6 +9,8 @@ linters:
     - ineffassign
     - errcheck
     - unused
+    - gofmt
+    - goimports
 
 linters-settings:
   revive:
