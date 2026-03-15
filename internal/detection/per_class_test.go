@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/Urealaden/log-sage-temp/internal/extraction"
@@ -70,6 +71,27 @@ func assertNoHypothesis(t *testing.T, got []types.Hypothesis) {
 	}
 }
 
+func assertDeterministicDetection(t *testing.T, class types.IssueClass, signals types.SignalSet) {
+	t.Helper()
+
+	detector := DefaultDetector{Class: class}
+	first := detector.Detect(signals)
+	second := detector.Detect(signals)
+	if !reflect.DeepEqual(first, second) {
+		t.Fatalf("Detect() results differ across repeated calls: %#v != %#v", first, second)
+	}
+}
+
+func assertEmptySignalsSafe(t *testing.T, class types.IssueClass) {
+	t.Helper()
+
+	detector := DefaultDetector{Class: class}
+
+	assertNoHypothesis(t, detector.Detect(types.SignalSet{}))
+	assertNoHypothesis(t, detector.Detect(types.SignalSet{Matches: nil}))
+	assertNoHypothesis(t, detector.Detect(types.SignalSet{Matches: []types.PatternMatch{}}))
+}
+
 func patternsForClass(class types.IssueClass) []types.SignalPattern {
 	return append(append([]types.SignalPattern{}, class.PrimarySignals...), class.CorroboratingSignals...)
 }
@@ -83,6 +105,7 @@ func TestOutOfMemoryDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "oom-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "OutOfMemory")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -90,6 +113,12 @@ func TestOutOfMemoryDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -102,6 +131,7 @@ func TestCrashLoopBackOffDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "k8s-pod-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "CrashLoopBackOff")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -109,6 +139,12 @@ func TestCrashLoopBackOffDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -121,6 +157,7 @@ func TestImagePullBackOffDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "imagepull-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "ImagePullBackOff")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -128,6 +165,12 @@ func TestImagePullBackOffDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -140,6 +183,7 @@ func TestConnectionRefusedDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "k8s-pod-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "ConnectionRefused")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -147,6 +191,12 @@ func TestConnectionRefusedDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -159,6 +209,7 @@ func TestDNSFailureDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "dns-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "DNSFailure")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -166,6 +217,12 @@ func TestDNSFailureDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -178,6 +235,7 @@ func TestTLSFailureDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "tls-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "TLSFailure")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -185,6 +243,12 @@ func TestTLSFailureDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -197,6 +261,7 @@ func TestMissingEnvVarDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "missingenv-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "MissingEnvVar")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -204,6 +269,12 @@ func TestMissingEnvVarDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -216,6 +287,7 @@ func TestPermissionDeniedDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "permission-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "PermissionDenied")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -223,6 +295,12 @@ func TestPermissionDeniedDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -235,6 +313,7 @@ func TestDiskFullDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "diskfull-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "DiskFull")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -242,6 +321,12 @@ func TestDiskFullDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -254,6 +339,7 @@ func TestDependencyTimeoutDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "ci-pipeline-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "DependencyTimeout")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -261,6 +347,12 @@ func TestDependencyTimeoutDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -273,6 +365,7 @@ func TestPanicDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "stacktrace-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "Panic")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -280,6 +373,12 @@ func TestPanicDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
 
@@ -292,6 +391,7 @@ func TestPortBindingFailureDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "portbind-sample.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertOneHypothesis(t, got, "PortBindingFailure")
+		assertDeterministicDetection(t, class, signals)
 	})
 
 	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
@@ -299,5 +399,11 @@ func TestPortBindingFailureDetector(t *testing.T) {
 		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
 		got := (DefaultDetector{Class: class}).Detect(signals)
 		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
 	})
 }
