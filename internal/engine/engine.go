@@ -3,7 +3,10 @@ package engine
 import (
 	"context"
 
+	"github.com/Urealaden/log-sage-temp/internal/detection"
+	"github.com/Urealaden/log-sage-temp/internal/extraction"
 	"github.com/Urealaden/log-sage-temp/internal/normalize"
+	"github.com/Urealaden/log-sage-temp/internal/scoring"
 	"github.com/Urealaden/log-sage-temp/pkg/types"
 )
 
@@ -33,7 +36,7 @@ func (e *engine) Analyze(ctx context.Context, input types.DiagnosticInput) (*typ
 		return nil, err
 	}
 
-	ranked, err := e.scoreAndRank(ctx, hypotheses)
+	ranked, err := e.scoreAndRank(ctx, hypotheses, signals)
 	if err != nil {
 		return nil, err
 	}
@@ -42,8 +45,6 @@ func (e *engine) Analyze(ctx context.Context, input types.DiagnosticInput) (*typ
 }
 
 type normalizedInput []normalize.Line
-
-type extractedSignals struct{}
 
 func (e *engine) normalize(ctx context.Context, input types.DiagnosticInput) (normalizedInput, error) {
 	lines, err := normalize.Normalize(ctx, input.Reader)
@@ -54,38 +55,58 @@ func (e *engine) normalize(ctx context.Context, input types.DiagnosticInput) (no
 	return normalizedInput(lines), nil
 }
 
-func (e *engine) extractSignals(ctx context.Context, input normalizedInput) (extractedSignals, error) {
+func (e *engine) extractSignals(ctx context.Context, input normalizedInput) (types.SignalSet, error) {
 	select {
 	case <-ctx.Done():
-		return extractedSignals{}, ctx.Err()
+		return types.SignalSet{}, ctx.Err()
 	default:
 	}
 
-	_ = input
+	allPatterns := make([]types.SignalPattern, 0)
+	for _, class := range detection.IssueRegistry {
+		allPatterns = append(allPatterns, class.PrimarySignals...)
+		allPatterns = append(allPatterns, class.CorroboratingSignals...)
+	}
 
-	return extractedSignals{}, nil
+	return extraction.ExtractSignals([]normalize.Line(input), allPatterns), nil
 }
 
-func (e *engine) detectHypotheses(ctx context.Context, signals extractedSignals) ([]types.Hypothesis, error) {
+func (e *engine) detectHypotheses(ctx context.Context, signals types.SignalSet) ([]types.Hypothesis, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
 	}
 
-	_ = signals
-
-	return nil, nil
+	return detection.EvaluateRegistry(signals), nil
 }
 
-func (e *engine) scoreAndRank(ctx context.Context, hypotheses []types.Hypothesis) ([]types.Hypothesis, error) {
+func (e *engine) scoreAndRank(ctx context.Context, hypotheses []types.Hypothesis, signals types.SignalSet) ([]types.Hypothesis, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
 	}
 
-	return hypotheses, nil
+	candidates := scoring.BuildCandidates(hypotheses, signals)
+	candidates = scoring.ApplyCorroboration(candidates)
+	candidates = scoring.ApplyRelationships(candidates)
+	candidates = scoring.MapConfidence(candidates)
+	candidates = scoring.Rank(candidates)
+
+	result := make([]types.Hypothesis, len(candidates))
+	for i, candidate := range candidates {
+		result[i] = types.Hypothesis{
+			IssueClass:  candidate.Class.Name,
+			Confidence:  candidate.Confidence,
+			Phase:       candidate.Phase,
+			Score:       candidate.BaseScore,
+			Evidence:    candidate.Evidence,
+			Explanation: candidate.Class.ExplanationTemplate,
+		}
+	}
+
+	return result, nil
 }
 
 func (e *engine) generateResult(ctx context.Context, hypotheses []types.Hypothesis) (*types.AnalysisResult, error) {
