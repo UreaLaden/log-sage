@@ -6,6 +6,7 @@ import (
 	"github.com/Urealaden/log-sage-temp/internal/detection"
 	"github.com/Urealaden/log-sage-temp/internal/extraction"
 	"github.com/Urealaden/log-sage-temp/internal/normalize"
+	"github.com/Urealaden/log-sage-temp/internal/recommendation"
 	"github.com/Urealaden/log-sage-temp/internal/scoring"
 	"github.com/Urealaden/log-sage-temp/pkg/types"
 )
@@ -116,7 +117,12 @@ func (e *engine) generateResult(ctx context.Context, hypotheses []types.Hypothes
 	default:
 	}
 
+	nextSteps := recommendation.NextSteps(hypotheses, detection.IssueRegistry)
+	commands := recommendation.Commands(hypotheses, detection.IssueRegistry)
+
 	return &types.AnalysisResult{
-		TopCauses: hypotheses,
+		TopCauses:            hypotheses,
+		RecommendedCommands:  commands,
+		RecommendedNextSteps: nextSteps,
 	}, nil
 }

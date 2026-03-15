@@ -18,6 +18,8 @@ func TestEngineAnalyze(t *testing.T) {
 		cancelBeforeCall bool
 		wantClasses      []string
 		wantConfidence   types.ConfidenceLevel
+		wantCommands     bool
+		wantNextSteps    bool
 		wantErr          bool
 	}{
 		{
@@ -30,6 +32,8 @@ func TestEngineAnalyze(t *testing.T) {
 			log:            "OOMKilled\n",
 			wantClasses:    []string{"OutOfMemory"},
 			wantConfidence: types.ConfidenceHigh,
+			wantCommands:   true,
+			wantNextSteps:  true,
 		},
 		{
 			name:        "connection refused",
@@ -96,6 +100,12 @@ func TestEngineAnalyze(t *testing.T) {
 
 			if tt.wantConfidence != "" && result.TopCauses[0].Confidence != tt.wantConfidence {
 				t.Fatalf("TopCauses[0].Confidence = %q, want %q", result.TopCauses[0].Confidence, tt.wantConfidence)
+			}
+			if tt.wantNextSteps && len(result.RecommendedNextSteps) == 0 {
+				t.Fatal("RecommendedNextSteps is empty, want non-empty")
+			}
+			if tt.wantCommands && len(result.RecommendedCommands) == 0 {
+				t.Fatal("RecommendedCommands is empty, want non-empty")
 			}
 		})
 	}

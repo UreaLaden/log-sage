@@ -64,6 +64,19 @@ After completing work, Codex must update `.ai/handoffs/current.md` with:
 - recommended next steps
 - completion status
 
+## Implementation Prompt Alias
+
+When the user says `execute implementation-prompt.md`, `run implementation-prompt.md`,
+`run the implementation prompt`, `run the implementation`, or `execute the
+implementation`, interpret that as a request to execute the latest current
+contents of `.ai/handoffs/implementation-prompt.md` unless the user explicitly
+names a different file.
+
+Do not treat `.ai/handoffs/current.md` as overriding that request. If
+`.ai/handoffs/implementation-prompt.md` still points at an already-completed
+task, say that explicitly and stop rather than silently reusing the last
+completed handoff task.
+
 ## Scope Control
 
 Every implementation task must be tied to specific work items from `.ai/backlog/mapping.md`.
