@@ -9,11 +9,19 @@ import (
 
 const version = "0.0.0-dev"
 
+var exit = os.Exit
+
 func main() {
+	exit(run())
+}
+
+func run() int {
 	if err := newRootCmd().Execute(); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return 1
 	}
+
+	return 0
 }
 
 func newRootCmd() *cobra.Command {
@@ -38,6 +46,7 @@ func newRootCmd() *cobra.Command {
 	}
 
 	rootCmd.Flags().BoolVarP(&showVersion, "version", "v", false, "Print the logsage version")
+	rootCmd.AddCommand(newAnalyzeCmd())
 	rootCmd.AddCommand(newVersionCmd())
 
 	return rootCmd
