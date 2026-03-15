@@ -11,15 +11,11 @@ linters:
     - ineffassign
     - errcheck
     - unused
+  settings:
+    revive:
+      severity: warning
 
 formatters:
   enable:
     - gofmt
     - goimports
-
-linters-settings:
-  revive:
-    severity: warning
-
-issues:
-  exclude-use-default: false
