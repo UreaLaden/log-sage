@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"os"
@@ -113,6 +114,269 @@ func TestAnalyzeCmd(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAnalyzeCmdJSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("json with oom log is valid and contains top causes", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "oom.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--json", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		var result types.AnalysisResult
+		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+			t.Fatalf("json.Unmarshal() error = %v, want nil; output=%q", err, stdout.String())
+		}
+		if len(result.TopCauses) == 0 {
+			t.Fatalf("TopCauses = %v, want non-empty", result.TopCauses)
+		}
+		if result.TopCauses[0].IssueClass != "OutOfMemory" {
+			t.Fatalf("TopCauses[0].IssueClass = %q, want %q", result.TopCauses[0].IssueClass, "OutOfMemory")
+		}
+		if !strings.Contains(stdout.String(), "\"TopCauses\"") {
+			t.Fatalf("output = %q, want TopCauses key", stdout.String())
+		}
+	})
+
+	t.Run("json with empty log returns valid json with empty top causes", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "empty.log")
+		if err := os.WriteFile(path, []byte(""), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--json", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		var result types.AnalysisResult
+		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+			t.Fatalf("json.Unmarshal() error = %v, want nil; output=%q", err, stdout.String())
+		}
+		if result.TopCauses == nil {
+			t.Fatalf("TopCauses = nil, want empty slice")
+		}
+		if len(result.TopCauses) != 0 {
+			t.Fatalf("len(TopCauses) = %d, want 0", len(result.TopCauses))
+		}
+	})
+}
+
+func TestAnalyzeCmdQuiet(t *testing.T) {
+	t.Parallel()
+
+	t.Run("quiet with oom log prints one-line summary", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "oom.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--quiet", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+		if got := stdout.String(); got != "OutOfMemory: high confidence\n" {
+			t.Fatalf("output = %q, want %q", got, "OutOfMemory: high confidence\n")
+		}
+	})
+
+	t.Run("quiet with empty log prints no issues", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "empty.log")
+		if err := os.WriteFile(path, []byte(""), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--quiet", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+		if got := stdout.String(); got != "No issues detected.\n" {
+			t.Fatalf("output = %q, want %q", got, "No issues detected.\n")
+		}
+	})
+
+	t.Run("quiet and json are mutually exclusive", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "oom.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		cmd.SetArgs([]string{"--quiet", "--json", path})
+
+		err := cmd.Execute()
+		if err == nil {
+			t.Fatal("Execute() error = nil, want non-nil")
+		}
+		if err.Error() != "--json and --quiet are mutually exclusive" {
+			t.Fatalf("error = %q, want %q", err.Error(), "--json and --quiet are mutually exclusive")
+		}
+	})
+}
+
+func TestAnalyzeCmdTop(t *testing.T) {
+	t.Parallel()
+
+	multiCauseLog := "CrashLoopBackOff\nOOMKilled\n"
+
+	t.Run("top 1 human output includes only highest-ranked cause", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "multi.log")
+		if err := os.WriteFile(path, []byte(multiCauseLog), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--top", "1", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		output := stdout.String()
+		if !strings.Contains(output, "OutOfMemory (high confidence)") {
+			t.Fatalf("output = %q, want top-ranked cause", output)
+		}
+		if strings.Contains(output, "CrashLoopBackOff") {
+			t.Fatalf("output = %q, did not expect lower-ranked cause", output)
+		}
+	})
+
+	t.Run("top 0 preserves all results", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "multi.log")
+		if err := os.WriteFile(path, []byte(multiCauseLog), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--top", "0", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		output := stdout.String()
+		if !strings.Contains(output, "OutOfMemory (high confidence)") || !strings.Contains(output, "CrashLoopBackOff") {
+			t.Fatalf("output = %q, want both causes", output)
+		}
+	})
+
+	t.Run("top negative returns error", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "oom.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		cmd.SetArgs([]string{"--top", "-1", path})
+
+		err := cmd.Execute()
+		if err == nil {
+			t.Fatal("Execute() error = nil, want non-nil")
+		}
+		if !strings.Contains(err.Error(), "--top must be a positive integer") {
+			t.Fatalf("error = %q, want top validation message", err.Error())
+		}
+	})
+
+	t.Run("top 1 json returns one top cause", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "multi.log")
+		if err := os.WriteFile(path, []byte(multiCauseLog), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--json", "--top", "1", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		var result types.AnalysisResult
+		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+			t.Fatalf("json.Unmarshal() error = %v, want nil; output=%q", err, stdout.String())
+		}
+		if len(result.TopCauses) != 1 {
+			t.Fatalf("len(TopCauses) = %d, want 1", len(result.TopCauses))
+		}
+	})
+
+	t.Run("top 1 quiet prints one cause line", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "multi.log")
+		if err := os.WriteFile(path, []byte(multiCauseLog), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--quiet", "--top", "1", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+		if got := stdout.String(); got != "OutOfMemory: high confidence\n" {
+			t.Fatalf("output = %q, want %q", got, "OutOfMemory: high confidence\n")
+		}
+	})
 }
 
 func TestAnalyzeCmdErrorPaths(t *testing.T) {
@@ -275,13 +539,14 @@ func TestPrintResult(t *testing.T) {
 
 		output := out.String()
 		for _, want := range []string{
-			"Top Likely Causes",
+			"Top Likely Causes\n\n",
 			"1. OutOfMemory (high confidence)",
-			"The container exceeded its memory limit.",
+			"   The container exceeded its memory limit.",
+			"\n   Evidence:\n",
 			"- oom-killed: 2 occurrence(s)",
-			"e.g. OOMKilled",
-			"Next Steps",
-			"Recommended Commands",
+			"     > OOMKilled",
+			"Next Steps\n\n",
+			"Recommended Commands\n\n",
 		} {
 			if !strings.Contains(output, want) {
 				t.Fatalf("output = %q, want substring %q", output, want)
@@ -304,6 +569,12 @@ func TestPrintResult(t *testing.T) {
 		}
 
 		output := out.String()
+		if strings.Contains(output, "Next Steps\n\n") {
+			t.Fatalf("output = %q, did not expect Next Steps section", output)
+		}
+		if strings.Contains(output, "Recommended Commands\n\n") {
+			t.Fatalf("output = %q, did not expect Recommended Commands section", output)
+		}
 		if strings.Contains(output, "Next Steps") {
 			t.Fatalf("output = %q, did not expect Next Steps section", output)
 		}
@@ -387,7 +658,7 @@ func TestRootCmdIncludesAnalyze(t *testing.T) {
 
 	found := false
 	for _, cmd := range root.Commands() {
-		if cmd.Use == "analyze <file>" {
+		if cmd.Use == "analyze [<file>]" {
 			found = true
 			break
 		}

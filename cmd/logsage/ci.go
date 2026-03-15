@@ -10,11 +10,19 @@ import (
 )
 
 func newCICmd() *cobra.Command {
-	return &cobra.Command{
+	var asJSON bool
+	var quiet bool
+	var topN int
+
+	cmd := &cobra.Command{
 		Use:   "ci <log-file>",
 		Short: "Analyze a CI log file and report likely root causes",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
+			if asJSON && quiet {
+				return fmt.Errorf("--json and --quiet are mutually exclusive")
+			}
+
 			file, err := os.Open(args[0])
 			if err != nil {
 				return fmt.Errorf("open %s: %w", args[0], err)
@@ -27,14 +35,40 @@ func newCICmd() *cobra.Command {
 			}()
 
 			result, err := engine.New().Analyze(cmd.Context(), types.DiagnosticInput{
-				Reader:   file,
-				Metadata: map[string]string{"source_type": "ci"},
+				Reader:     file,
+				SourceType: "ci",
 			})
 			if err != nil {
 				return err
 			}
+			if topN < 0 {
+				return fmt.Errorf("--top must be a positive integer")
+			}
+			if topN > 0 && topN < len(result.TopCauses) {
+				truncated := append([]types.Hypothesis(nil), result.TopCauses[:topN]...)
+				result = &types.AnalysisResult{
+					Summary:              result.Summary,
+					TopCauses:            truncated,
+					Unknowns:             result.Unknowns,
+					RecommendedCommands:  result.RecommendedCommands,
+					RecommendedNextSteps: result.RecommendedNextSteps,
+				}
+			}
 
-			return printResult(cmd.OutOrStdout(), result)
+			switch {
+			case asJSON:
+				return printJSON(cmd.OutOrStdout(), result)
+			case quiet:
+				return printQuiet(cmd.OutOrStdout(), result)
+			default:
+				return printResult(cmd.OutOrStdout(), result)
+			}
 		},
 	}
+
+	cmd.Flags().BoolVar(&asJSON, "json", false, "Output results as JSON")
+	cmd.Flags().BoolVar(&quiet, "quiet", false, "Output a compact one-line summary per issue")
+	cmd.Flags().IntVar(&topN, "top", 0, "Limit output to top N results (0 = all)")
+
+	return cmd
 }

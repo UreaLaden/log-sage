@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 
@@ -35,10 +36,15 @@ func printResult(w io.Writer, result *types.AnalysisResult) error {
 					return err
 				}
 				if len(evidence.Examples) > 0 {
-					if _, err := fmt.Fprintf(w, "     e.g. %s\n", evidence.Examples[0]); err != nil {
+					if _, err := fmt.Fprintf(w, "     > %s\n", evidence.Examples[0]); err != nil {
 						return err
 					}
 				}
+			}
+		}
+		if i < len(result.TopCauses)-1 {
+			if _, err := fmt.Fprintf(w, "\n"); err != nil {
+				return err
 			}
 		}
 		if _, err := fmt.Fprintf(w, "\n"); err != nil {
@@ -47,7 +53,7 @@ func printResult(w io.Writer, result *types.AnalysisResult) error {
 	}
 
 	if len(result.RecommendedNextSteps) > 0 {
-		if _, err := fmt.Fprintf(w, "Next Steps\n"); err != nil {
+		if _, err := fmt.Fprintf(w, "Next Steps\n\n"); err != nil {
 			return err
 		}
 		for _, step := range result.RecommendedNextSteps {
@@ -61,13 +67,34 @@ func printResult(w io.Writer, result *types.AnalysisResult) error {
 	}
 
 	if len(result.RecommendedCommands) > 0 {
-		if _, err := fmt.Fprintf(w, "Recommended Commands\n"); err != nil {
+		if _, err := fmt.Fprintf(w, "Recommended Commands\n\n"); err != nil {
 			return err
 		}
 		for _, command := range result.RecommendedCommands {
 			if _, err := fmt.Fprintf(w, "- %s\n", command); err != nil {
 				return err
 			}
+		}
+	}
+
+	return nil
+}
+
+func printJSON(w io.Writer, result *types.AnalysisResult) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(result)
+}
+
+func printQuiet(w io.Writer, result *types.AnalysisResult) error {
+	if len(result.TopCauses) == 0 {
+		_, err := fmt.Fprintf(w, "No issues detected.\n")
+		return err
+	}
+
+	for _, cause := range result.TopCauses {
+		if _, err := fmt.Fprintf(w, "%s: %s confidence\n", cause.IssueClass, cause.Confidence); err != nil {
+			return err
 		}
 	}
 

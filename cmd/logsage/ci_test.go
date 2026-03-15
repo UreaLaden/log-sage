@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Urealaden/log-sage-temp/pkg/types"
 )
 
 func TestCICmd(t *testing.T) {
@@ -78,6 +81,85 @@ func TestCICmd(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestCICmdJSON(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "ci.log")
+	if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	cmd := newCICmd()
+	var stdout bytes.Buffer
+	cmd.SetOut(&stdout)
+	cmd.SetArgs([]string{"--json", path})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v, want nil", err)
+	}
+
+	var result types.AnalysisResult
+	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v, want nil; output=%q", err, stdout.String())
+	}
+	if len(result.TopCauses) == 0 {
+		t.Fatalf("TopCauses = %v, want non-empty", result.TopCauses)
+	}
+	if result.TopCauses[0].IssueClass != "OutOfMemory" {
+		t.Fatalf("TopCauses[0].IssueClass = %q, want %q", result.TopCauses[0].IssueClass, "OutOfMemory")
+	}
+}
+
+func TestCICmdQuiet(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "ci.log")
+	if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	cmd := newCICmd()
+	var stdout bytes.Buffer
+	cmd.SetOut(&stdout)
+	cmd.SetArgs([]string{"--quiet", path})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v, want nil", err)
+	}
+	if got := stdout.String(); got != "OutOfMemory: high confidence\n" {
+		t.Fatalf("output = %q, want %q", got, "OutOfMemory: high confidence\n")
+	}
+}
+
+func TestCICmdTop(t *testing.T) {
+	t.Parallel()
+
+	path := filepath.Join(t.TempDir(), "ci.log")
+	log := "CrashLoopBackOff\nOOMKilled\n"
+	if err := os.WriteFile(path, []byte(log), 0o644); err != nil {
+		t.Fatalf("os.WriteFile() error = %v", err)
+	}
+
+	cmd := newCICmd()
+	var stdout bytes.Buffer
+	cmd.SetOut(&stdout)
+	cmd.SetArgs([]string{"--top", "1", path})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v, want nil", err)
+	}
+
+	output := stdout.String()
+	if !strings.Contains(output, "OutOfMemory (high confidence)") {
+		t.Fatalf("output = %q, want top-ranked cause", output)
+	}
+	if strings.Contains(output, "CrashLoopBackOff") {
+		t.Fatalf("output = %q, did not expect lower-ranked cause", output)
 	}
 }
 
