@@ -118,6 +118,49 @@ func TestAnalyzeCmd(t *testing.T) {
 func TestAnalyzeCmdErrorPaths(t *testing.T) {
 	t.Parallel()
 
+	t.Run("stdin with valid log content succeeds", func(t *testing.T) {
+		t.Parallel()
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetIn(strings.NewReader("OOMKilled\n"))
+		cmd.SetArgs([]string{"--stdin"})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		output := stdout.String()
+		for _, want := range []string{
+			"Top Likely Causes",
+			"OutOfMemory (high confidence)",
+			"Next Steps",
+			"Recommended Commands",
+		} {
+			if !strings.Contains(output, want) {
+				t.Fatalf("output = %q, want substring %q", output, want)
+			}
+		}
+	})
+
+	t.Run("stdin with empty content prints no issues", func(t *testing.T) {
+		t.Parallel()
+
+		cmd := newAnalyzeCmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetIn(strings.NewReader(""))
+		cmd.SetArgs([]string{"--stdin"})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+		if got := stdout.String(); got != "No issues detected.\n" {
+			t.Fatalf("output = %q, want %q", got, "No issues detected.\n")
+		}
+	})
+
 	t.Run("cancelled context returns error", func(t *testing.T) {
 		t.Parallel()
 
@@ -172,6 +215,22 @@ func TestAnalyzeCmdErrorPaths(t *testing.T) {
 		}
 		if !strings.Contains(err.Error(), "accepts 1 arg(s)") {
 			t.Fatalf("error = %q, want arg validation message", err.Error())
+		}
+	})
+
+	t.Run("stdin and positional arg are mutually exclusive", func(t *testing.T) {
+		t.Parallel()
+
+		cmd := newAnalyzeCmd()
+		cmd.SetIn(strings.NewReader("OOMKilled\n"))
+		cmd.SetArgs([]string{"--stdin", "oom.log"})
+
+		err := cmd.Execute()
+		if err == nil {
+			t.Fatal("Execute() error = nil, want non-nil")
+		}
+		if !strings.Contains(err.Error(), "mutually exclusive") {
+			t.Fatalf("error = %q, want mutual exclusivity message", err.Error())
 		}
 	})
 }
