@@ -85,6 +85,12 @@ func TestEngineAnalyze(t *testing.T) {
 				if len(result.TopCauses) != 0 {
 					t.Fatalf("len(result.TopCauses) = %d, want 0", len(result.TopCauses))
 				}
+				if len(result.RecommendedNextSteps) != 0 {
+					t.Fatalf("RecommendedNextSteps = %v, want empty", result.RecommendedNextSteps)
+				}
+				if len(result.RecommendedCommands) != 0 {
+					t.Fatalf("RecommendedCommands = %v, want empty", result.RecommendedCommands)
+				}
 				return
 			}
 

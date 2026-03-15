@@ -187,3 +187,21 @@ The final response must also include short manual validation steps the user can 
 
 All CodeRabbit review comments must be evaluated using the CodeRabbit
 evaluation template before any changes are implemented.
+
+## CLI Boundary Rule
+
+The CLI must depend only on `internal/engine`.
+
+Allowed flow:
+cmd/logsage -> internal/engine -> normalize/extraction/detection/scoring/recommendation
+
+Disallowed:
+- cmd/logsage importing internal/detection directly
+- cmd/logsage importing internal/scoring directly
+- cmd/logsage importing internal/recommendation directly
+- cmd/logsage importing internal/extraction directly
+- CLI flags bypassing engine orchestration
+
+The engine is the single orchestration boundary for analysis behavior.
+All user-facing rendering, formatting, and output-mode handling belong in the CLI.
+All analysis, scoring, and recommendation logic belong behind `internal/engine`.
