@@ -1,0 +1,3 @@
+2026-03-15T12:00:01Z ERROR missing environment variable: DATABASE_URL
+2026-03-15T12:00:02Z ERROR required env DB_PASSWORD is not set
+2026-03-15T12:00:03Z ERROR startup error: configuration incomplete

@@ -1,0 +1,3 @@
+2026-03-15T12:00:01Z ERROR OOMKilled: container exceeded memory limit
+2026-03-15T12:00:02Z ERROR out of memory: kill process 42
+2026-03-15T12:00:03Z INFO container restarting with exit code 137
