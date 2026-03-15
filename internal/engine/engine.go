@@ -118,9 +118,11 @@ func (e *engine) generateResult(ctx context.Context, hypotheses []types.Hypothes
 	}
 
 	nextSteps := recommendation.NextSteps(hypotheses, detection.IssueRegistry)
+	commands := recommendation.Commands(hypotheses, detection.IssueRegistry)
 
 	return &types.AnalysisResult{
 		TopCauses:            hypotheses,
+		RecommendedCommands:  commands,
 		RecommendedNextSteps: nextSteps,
 	}, nil
 }
