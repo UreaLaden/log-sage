@@ -14,7 +14,7 @@ func newAnalyzeCmd() *cobra.Command {
 	var fromStdin bool
 
 	cmd := &cobra.Command{
-		Use:   "analyze <file>",
+		Use:   "analyze [<file>]",
 		Short: "Analyze a log file and report likely root causes",
 		Args: func(cmd *cobra.Command, args []string) error {
 			if fromStdin {

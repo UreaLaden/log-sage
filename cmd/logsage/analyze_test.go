@@ -275,13 +275,14 @@ func TestPrintResult(t *testing.T) {
 
 		output := out.String()
 		for _, want := range []string{
-			"Top Likely Causes",
+			"Top Likely Causes\n\n",
 			"1. OutOfMemory (high confidence)",
-			"The container exceeded its memory limit.",
+			"   The container exceeded its memory limit.",
+			"\n   Evidence:\n",
 			"- oom-killed: 2 occurrence(s)",
-			"e.g. OOMKilled",
-			"Next Steps",
-			"Recommended Commands",
+			"     > OOMKilled",
+			"Next Steps\n\n",
+			"Recommended Commands\n\n",
 		} {
 			if !strings.Contains(output, want) {
 				t.Fatalf("output = %q, want substring %q", output, want)
@@ -304,6 +305,12 @@ func TestPrintResult(t *testing.T) {
 		}
 
 		output := out.String()
+		if strings.Contains(output, "Next Steps\n\n") {
+			t.Fatalf("output = %q, did not expect Next Steps section", output)
+		}
+		if strings.Contains(output, "Recommended Commands\n\n") {
+			t.Fatalf("output = %q, did not expect Recommended Commands section", output)
+		}
 		if strings.Contains(output, "Next Steps") {
 			t.Fatalf("output = %q, did not expect Next Steps section", output)
 		}
@@ -387,7 +394,7 @@ func TestRootCmdIncludesAnalyze(t *testing.T) {
 
 	found := false
 	for _, cmd := range root.Commands() {
-		if cmd.Use == "analyze <file>" {
+		if cmd.Use == "analyze [<file>]" {
 			found = true
 			break
 		}

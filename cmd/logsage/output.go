@@ -35,10 +35,15 @@ func printResult(w io.Writer, result *types.AnalysisResult) error {
 					return err
 				}
 				if len(evidence.Examples) > 0 {
-					if _, err := fmt.Fprintf(w, "     e.g. %s\n", evidence.Examples[0]); err != nil {
+					if _, err := fmt.Fprintf(w, "     > %s\n", evidence.Examples[0]); err != nil {
 						return err
 					}
 				}
+			}
+		}
+		if i < len(result.TopCauses)-1 {
+			if _, err := fmt.Fprintf(w, "\n"); err != nil {
+				return err
 			}
 		}
 		if _, err := fmt.Fprintf(w, "\n"); err != nil {
@@ -47,7 +52,7 @@ func printResult(w io.Writer, result *types.AnalysisResult) error {
 	}
 
 	if len(result.RecommendedNextSteps) > 0 {
-		if _, err := fmt.Fprintf(w, "Next Steps\n"); err != nil {
+		if _, err := fmt.Fprintf(w, "Next Steps\n\n"); err != nil {
 			return err
 		}
 		for _, step := range result.RecommendedNextSteps {
@@ -61,7 +66,7 @@ func printResult(w io.Writer, result *types.AnalysisResult) error {
 	}
 
 	if len(result.RecommendedCommands) > 0 {
-		if _, err := fmt.Fprintf(w, "Recommended Commands\n"); err != nil {
+		if _, err := fmt.Fprintf(w, "Recommended Commands\n\n"); err != nil {
 			return err
 		}
 		for _, command := range result.RecommendedCommands {
