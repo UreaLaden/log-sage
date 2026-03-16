@@ -107,8 +107,11 @@ intent from conversation context — derive it from the file.
 
 ## Backlog Generation
 
-Whenever an ADO CSV import backlog is generated, Claude must also generate `.ai/backlog/mapping.md`.
-The mapping file must mirror the Epic → Issue → Task hierarchy from the CSV.
+Whenever an ADO CSV import backlog is generated, Claude must:
+1. **Write the CSV file** to `.references/tickets/` — never only print it in the response.
+2. **Generate `.ai/backlog/mapping.md`** mirroring the Epic → Issue → Task hierarchy from the CSV.
+3. **CSV columns must be:** `Work Item Type`, `Title`, `Description` only. Never include `Area Path`, `Iteration Path`, or `Parent` — `Area Path` and `Iteration Path` are org-specific and fail on import; `Parent` requires a numeric work item ID that does not exist pre-import. Hierarchy is established manually in ADO after import, using `mapping.md` as the reference.
+
 The mapping must identify any orphaned or unresolved relationships.
 The mapping file is required so backlog structure can be reviewed before import.
 CSV files go under `.references/tickets/`; the mapping file always goes under `.ai/backlog/`.
