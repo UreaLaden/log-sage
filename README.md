@@ -1,12 +1,11 @@
 # LogSage
 
-LogSage analyzes log files and identifies the most likely root causes of system failures — returning ranked hypotheses with supporting evidence and suggested debugging steps.
+LogSage analyzes logs and identifies the most likely root causes of system failures — returning ranked hypotheses with supporting evidence and suggested debugging steps.
 
 <!-- TODO: add badges once CI and release pipeline are verified -->
 
 ---
 
-<!-- TODO: replace placeholder demo with real example -->
 ## 10-Second Demo
 
 LogSage scans raw logs and summarizes the most likely failure cause.
@@ -15,16 +14,18 @@ LogSage scans raw logs and summarizes the most likely failure cause.
 logsage ci --ci-summary build.log
 ```
 
-Expected output:
+Example output:
 
 ```text
-# placeholder: CI failure summary example output
-Top Cause: <issue class> (<confidence> confidence)
+Top Cause: OutOfMemory (high confidence)
+
 Evidence:
-- <evidence line 1>
-- <evidence line 2>
+- container terminated with exit code 137
+- reason: OOMKilled
+
 Recommended Action:
-- <recommended next step>
+- run `kubectl describe pod <pod-name>` to confirm memory limit
+- increase container memory limit if necessary
 ```
 
 ---
@@ -124,13 +125,15 @@ logsage ci --ci-summary build.log
 ```
 
 ```text
-# placeholder: CI failure summary example output
-Top Cause: <issue class> (<confidence> confidence)
+Top Cause: OutOfMemory (high confidence)
+
 Evidence:
-- <evidence line 1>
-- <evidence line 2>
+- container terminated with exit code 137
+- reason: OOMKilled
+
 Recommended Action:
-- <recommended next step>
+- run `kubectl describe pod <pod-name>` to confirm memory limit
+- increase container memory limit if necessary
 ```
 
 `--ci-summary` is mutually exclusive with `--json` and `--quiet`.
@@ -154,22 +157,21 @@ LogSage fetches both `kubectl logs` and `kubectl describe pod` output and analyz
 Example output from the default analysis mode:
 
 ```text
-# placeholder: full analysis output
 Top Likely Causes
 
-1. <issue class> (<confidence> confidence)
+1. OutOfMemory (high confidence)
 
 Evidence
-- <matched log line>
-- <matched log line>
+- container terminated with exit code 137
+- reason: OOMKilled
 
 Suggested Commands
-- <kubectl or shell command>
-- <kubectl or shell command>
+- kubectl describe pod my-app
+- kubectl top pod my-app
 
 Recommended Next Steps
-- <step 1>
-- <step 2>
+- confirm memory limits in deployment
+- increase container memory allocation
 ```
 
 ---
