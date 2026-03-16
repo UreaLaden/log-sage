@@ -160,6 +160,81 @@ func TestCICmdQuiet(t *testing.T) {
 	})
 }
 
+func TestCICmdCISummary(t *testing.T) {
+	t.Parallel()
+
+	t.Run("ci summary output for oom log", func(t *testing.T) {
+		t.Parallel()
+
+		dir := t.TempDir()
+		path := filepath.Join(dir, "ci.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newCICmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--ci-summary", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		output := stdout.String()
+		for _, want := range []string{
+			"Top Cause: OutOfMemory (high confidence)",
+			"Evidence:",
+			"OOMKilled",
+			"Recommended Action:",
+		} {
+			if !strings.Contains(output, want) {
+				t.Fatalf("output = %q, want substring %q", output, want)
+			}
+		}
+	})
+
+	t.Run("ci summary and json are mutually exclusive", func(t *testing.T) {
+		t.Parallel()
+
+		path := filepath.Join(t.TempDir(), "ci.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newCICmd()
+		cmd.SetArgs([]string{"--json", "--ci-summary", path})
+
+		err := cmd.Execute()
+		if err == nil {
+			t.Fatal("Execute() error = nil, want non-nil")
+		}
+		if !strings.Contains(err.Error(), "mutually exclusive") {
+			t.Fatalf("error = %q, want mutual exclusivity message", err.Error())
+		}
+	})
+
+	t.Run("ci summary and quiet are mutually exclusive", func(t *testing.T) {
+		t.Parallel()
+
+		path := filepath.Join(t.TempDir(), "ci.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newCICmd()
+		cmd.SetArgs([]string{"--quiet", "--ci-summary", path})
+
+		err := cmd.Execute()
+		if err == nil {
+			t.Fatal("Execute() error = nil, want non-nil")
+		}
+		if !strings.Contains(err.Error(), "mutually exclusive") {
+			t.Fatalf("error = %q, want mutual exclusivity message", err.Error())
+		}
+	})
+}
+
 func TestCICmdTop(t *testing.T) {
 	t.Parallel()
 

@@ -100,3 +100,58 @@ func printQuiet(w io.Writer, result *types.AnalysisResult) error {
 
 	return nil
 }
+
+func printCISummary(w io.Writer, result *types.AnalysisResult) error {
+	if len(result.TopCauses) == 0 {
+		_, err := fmt.Fprintf(w, "No issues detected.\n")
+		return err
+	}
+
+	topCause := result.TopCauses[0]
+	if _, err := fmt.Fprintf(w, "Top Cause: %s (%s confidence)\n", topCause.IssueClass, topCause.Confidence); err != nil {
+		return err
+	}
+
+	evidenceLines := ciSummaryEvidence(topCause)
+	if len(evidenceLines) > 0 {
+		if _, err := fmt.Fprintln(w, "Evidence:"); err != nil {
+			return err
+		}
+		for _, line := range evidenceLines {
+			if _, err := fmt.Fprintf(w, "- %s\n", line); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(result.RecommendedNextSteps) > 0 {
+		if _, err := fmt.Fprintln(w, "Recommended Action:"); err != nil {
+			return err
+		}
+		if _, err := fmt.Fprintf(w, "- %s\n", result.RecommendedNextSteps[0]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func ciSummaryEvidence(cause types.Hypothesis) []string {
+	lines := make([]string, 0, 2)
+	for _, evidence := range cause.Evidence {
+		for _, example := range evidence.Examples {
+			lines = append(lines, example)
+			if len(lines) == 2 {
+				return lines
+			}
+		}
+		if len(evidence.Examples) == 0 && evidence.Signal != "" {
+			lines = append(lines, evidence.Signal)
+			if len(lines) == 2 {
+				return lines
+			}
+		}
+	}
+
+	return lines
+}
