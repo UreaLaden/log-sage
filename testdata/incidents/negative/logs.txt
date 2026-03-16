@@ -1,0 +1,7 @@
+2024-01-15T10:00:00Z INFO  server starting up
+2024-01-15T10:00:01Z INFO  loading configuration from /etc/app/config.yaml
+2024-01-15T10:00:01Z INFO  database connection established host=db.internal port=5432
+2024-01-15T10:00:02Z INFO  cache connected host=redis.internal port=6379
+2024-01-15T10:00:02Z INFO  listening on :8080
+2024-01-15T10:00:03Z INFO  health check endpoint registered path=/healthz
+2024-01-15T10:00:03Z INFO  ready to serve requests
