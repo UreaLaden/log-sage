@@ -39,10 +39,10 @@ If no update is needed, Codex must explicitly state that in `.ai/handoffs/curren
 ## Handoff File Requirement
 
 IMPORTANT:
-- The FIRST handoff block in `.ai/handoffs/current.md` is the active task.
+- The FIRST (topmost) handoff block in `.ai/handoffs/current.md` is the active task.
 - Ignore older historical handoff blocks below it.
-- Update the existing handoff in place.
-- Do NOT create a new handoff file.
+- Prepend new handoff entries to `.ai/handoffs/current.md`; do not overwrite prior entries.
+- When starting a new task, add a new handoff block above the previous completed entry.
 
 Before starting any implementation task, Codex must:
 

@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/Urealaden/log-sage-temp/internal/adapters"
 )
 
 func TestK8sPodCmd(t *testing.T) {
@@ -11,7 +15,9 @@ func TestK8sPodCmd(t *testing.T) {
 	t.Run("requires a pod name", func(t *testing.T) {
 		t.Parallel()
 
-		cmd := newK8sPodCmd()
+		cmd := newK8sPodCmdWith(adapters.NewWithRunner(func(name string, args ...string) ([]byte, error) {
+			return nil, nil
+		}))
 		cmd.SetArgs([]string{})
 
 		err := cmd.Execute()
@@ -23,18 +29,92 @@ func TestK8sPodCmd(t *testing.T) {
 		}
 	})
 
-	t.Run("returns scaffold error with pod name", func(t *testing.T) {
+	t.Run("adapter error propagates", func(t *testing.T) {
 		t.Parallel()
 
-		cmd := newK8sPodCmd()
+		cmd := newK8sPodCmdWith(adapters.NewWithRunner(func(name string, args ...string) ([]byte, error) {
+			if args[0] == "logs" {
+				return nil, fmt.Errorf("pod not found")
+			}
+			return []byte("ok"), nil
+		}))
 		cmd.SetArgs([]string{"demo-pod"})
 
 		err := cmd.Execute()
 		if err == nil {
 			t.Fatal("Execute() error = nil, want non-nil")
 		}
-		if err.Error() != "k8s pod analysis is not implemented yet" {
-			t.Fatalf("error = %q, want %q", err.Error(), "k8s pod analysis is not implemented yet")
+		if !strings.Contains(err.Error(), "pod not found") {
+			t.Fatalf("error = %q, want propagated adapter error", err.Error())
+		}
+	})
+
+	t.Run("successful analysis uses adapter output", func(t *testing.T) {
+		t.Parallel()
+
+		cmd := newK8sPodCmdWith(adapters.NewWithRunner(func(name string, args ...string) ([]byte, error) {
+			switch args[0] {
+			case "logs":
+				return []byte("OOMKilled\n"), nil
+			case "describe":
+				return []byte("Status: OOMKilled\n"), nil
+			default:
+				return nil, fmt.Errorf("unexpected subcommand: %s", args[0])
+			}
+		}))
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"demo-pod"})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+
+		output := stdout.String()
+		for _, want := range []string{
+			"Top Likely Causes",
+			"OutOfMemory (high confidence)",
+			"Recommended Commands",
+		} {
+			if !strings.Contains(output, want) {
+				t.Fatalf("output = %q, want substring %q", output, want)
+			}
+		}
+	})
+
+	t.Run("namespace flag defaults to default", func(t *testing.T) {
+		t.Parallel()
+
+		var seen []string
+		cmd := newK8sPodCmdWith(adapters.NewWithRunner(func(name string, args ...string) ([]byte, error) {
+			seen = append([]string(nil), args...)
+			switch args[0] {
+			case "logs":
+				return []byte("OOMKilled\n"), nil
+			case "describe":
+				return []byte("Status: OOMKilled\n"), nil
+			default:
+				return nil, fmt.Errorf("unexpected subcommand: %s", args[0])
+			}
+		}))
+
+		flag := cmd.Flag("namespace")
+		if flag == nil {
+			t.Fatal("namespace flag = nil, want non-nil")
+		}
+		if flag.DefValue != "default" {
+			t.Fatalf("namespace default = %q, want %q", flag.DefValue, "default")
+		}
+
+		cmd.SetArgs([]string{"demo-pod"})
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+		if len(seen) == 0 {
+			t.Fatal("runner was not invoked")
+		}
+		if !strings.Contains(strings.Join(seen, " "), "default") {
+			t.Fatalf("runner args = %v, want default namespace", seen)
 		}
 	})
 }

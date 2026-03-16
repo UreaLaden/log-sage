@@ -117,23 +117,47 @@ func TestCICmdJSON(t *testing.T) {
 func TestCICmdQuiet(t *testing.T) {
 	t.Parallel()
 
-	dir := t.TempDir()
-	path := filepath.Join(dir, "ci.log")
-	if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
-		t.Fatalf("os.WriteFile() error = %v", err)
-	}
+	t.Run("quiet output for oom log", func(t *testing.T) {
+		t.Parallel()
 
-	cmd := newCICmd()
-	var stdout bytes.Buffer
-	cmd.SetOut(&stdout)
-	cmd.SetArgs([]string{"--quiet", path})
+		dir := t.TempDir()
+		path := filepath.Join(dir, "ci.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
 
-	if err := cmd.Execute(); err != nil {
-		t.Fatalf("Execute() error = %v, want nil", err)
-	}
-	if got := stdout.String(); got != "OutOfMemory: high confidence\n" {
-		t.Fatalf("output = %q, want %q", got, "OutOfMemory: high confidence\n")
-	}
+		cmd := newCICmd()
+		var stdout bytes.Buffer
+		cmd.SetOut(&stdout)
+		cmd.SetArgs([]string{"--quiet", path})
+
+		if err := cmd.Execute(); err != nil {
+			t.Fatalf("Execute() error = %v, want nil", err)
+		}
+		if got := stdout.String(); got != "OutOfMemory: high confidence\n" {
+			t.Fatalf("output = %q, want %q", got, "OutOfMemory: high confidence\n")
+		}
+	})
+
+	t.Run("json and quiet are mutually exclusive", func(t *testing.T) {
+		t.Parallel()
+
+		path := filepath.Join(t.TempDir(), "ci.log")
+		if err := os.WriteFile(path, []byte("OOMKilled\n"), 0o644); err != nil {
+			t.Fatalf("os.WriteFile() error = %v", err)
+		}
+
+		cmd := newCICmd()
+		cmd.SetArgs([]string{"--json", "--quiet", path})
+
+		err := cmd.Execute()
+		if err == nil {
+			t.Fatal("Execute() error = nil, want non-nil")
+		}
+		if !strings.Contains(err.Error(), "mutually exclusive") {
+			t.Fatalf("error = %q, want mutual exclusivity message", err.Error())
+		}
+	})
 }
 
 func TestCICmdTop(t *testing.T) {

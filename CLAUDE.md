@@ -27,6 +27,18 @@ After loading, confirm context is loaded and wait for the task.
 | What the user says | What it means |
 |---|---|
 | "review the handoff" / "review latest handoff" / "review current.md" | Read `.ai/handoffs/current.md` and evaluate the completed work |
+| "evaluate the pr review" / "review the pr review" | Read `.ai/handoffs/coderabbit-eval.md` and evaluate its findings |
+
+## CodeRabbit PR Review Evaluation
+
+When the user asks to evaluate the PR review:
+
+1. Enter plan mode
+2. Read `.ai/handoffs/coderabbit-eval.md`
+3. Locate each referenced file and verify whether the issue actually exists
+4. Apply ACCEPT / PARTIAL / REJECT per the evaluation rules in the file
+5. Output an implementation prompt for Codex — do NOT make code edits
+6. Only make edits if the user explicitly requests them after seeing the plan
 
 ## Always reference current.md
 

@@ -1,0 +1,9 @@
+mode: set
+github.com/Urealaden/log-sage-temp/internal/adapters/kubectl.go:19.28,21.2 1 1
+github.com/Urealaden/log-sage-temp/internal/adapters/kubectl.go:24.46,26.2 1 1
+github.com/Urealaden/log-sage-temp/internal/adapters/kubectl.go:28.65,30.2 1 1
+github.com/Urealaden/log-sage-temp/internal/adapters/kubectl.go:34.74,36.16 2 1
+github.com/Urealaden/log-sage-temp/internal/adapters/kubectl.go:36.16,38.3 1 1
+github.com/Urealaden/log-sage-temp/internal/adapters/kubectl.go:40.2,41.16 2 1
+github.com/Urealaden/log-sage-temp/internal/adapters/kubectl.go:41.16,43.3 1 1
+github.com/Urealaden/log-sage-temp/internal/adapters/kubectl.go:45.2,50.18 5 1
