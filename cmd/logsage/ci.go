@@ -12,6 +12,7 @@ import (
 func newCICmd() *cobra.Command {
 	var asJSON bool
 	var quiet bool
+	var ciSummary bool
 	var topN int
 
 	cmd := &cobra.Command{
@@ -21,6 +22,12 @@ func newCICmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			if asJSON && quiet {
 				return fmt.Errorf("--json and --quiet are mutually exclusive")
+			}
+			if asJSON && ciSummary {
+				return fmt.Errorf("--json and --ci-summary are mutually exclusive")
+			}
+			if quiet && ciSummary {
+				return fmt.Errorf("--quiet and --ci-summary are mutually exclusive")
 			}
 
 			file, err := os.Open(args[0])
@@ -60,6 +67,8 @@ func newCICmd() *cobra.Command {
 				return printJSON(cmd.OutOrStdout(), result)
 			case quiet:
 				return printQuiet(cmd.OutOrStdout(), result)
+			case ciSummary:
+				return printCISummary(cmd.OutOrStdout(), result)
 			default:
 				return printResult(cmd.OutOrStdout(), result)
 			}
@@ -68,6 +77,7 @@ func newCICmd() *cobra.Command {
 
 	cmd.Flags().BoolVar(&asJSON, "json", false, "Output results as JSON")
 	cmd.Flags().BoolVar(&quiet, "quiet", false, "Output a compact one-line summary per issue")
+	cmd.Flags().BoolVar(&ciSummary, "ci-summary", false, "Output a compact CI-oriented summary")
 	cmd.Flags().IntVar(&topN, "top", 0, "Limit output to top N results (0 = all)")
 
 	return cmd
