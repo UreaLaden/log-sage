@@ -1,180 +1,276 @@
 # LogSage
 
-🔎 Root-cause detection for logs.
+LogSage analyzes logs and identifies the most likely root causes of system failures — returning ranked hypotheses with supporting evidence and suggested debugging steps.
 
-LogSage analyzes logs and surfaces the **most likely causes of system failures** — with evidence and suggested debugging steps.
+<!-- TODO: add badges once CI and release pipeline are verified -->
 
-Instead of manually scanning thousands of lines, LogSage identifies common failure patterns like:
+---
 
-- CrashLoopBackOff
-- Out-of-memory kills
-- Connection refused
-- DNS failures
-- Missing environment variables
+## 10-Second Demo
 
+LogSage scans raw logs and summarizes the most likely failure cause.
 
-## Example
-
-Input log:
-
-```
-panic: missing REDIS_URL
-connection refused
-CrashLoopBackOff restarting container
+```bash
+logsage ci --ci-summary build.log
 ```
 
-Run LogSage:
-```
-logsage analyze logs.txt
-```
+Example output:
 
-Output:
-```
-Top Likely Causes
+```text
+Top Cause: OutOfMemory (high confidence)
 
-1. Missing environment variable (high confidence)
+Evidence:
+- container terminated with exit code 137
+- reason: OOMKilled
 
-Evidence
-
-* panic: missing REDIS_URL
-* configuration error during startup
-
-Suggested Commands
-
-* kubectl describe pod
-* kubectl get configmap
+Recommended Action:
+- run `kubectl describe pod <pod-name>` to confirm memory limit
+- increase container memory limit if necessary
 ```
 
-LogSage turns raw logs into **actionable debugging insight**.
+---
+
+## Why LogSage
+
+Debugging production failures means searching through thousands of log lines to find the one thing that went wrong.
+
+LogSage speeds this up by:
+
+1. Extracting meaningful signals from raw logs
+2. Detecting known failure patterns across 12 issue classes
+3. Ranking the most likely root causes by confidence
+4. Returning evidence and recommended debugging steps
+
+**Detected issue classes:** OutOfMemory, CrashLoopBackOff, ImagePullBackOff, ConnectionRefused, DNSFailure, TLSFailure, MissingEnvVar, PermissionDenied, DiskFull, DependencyTimeout, Panic, PortBindingFailure
 
 ---
 
 ## Installation
 
-### Go install
-
-```
-go install github.com/Urealaden/log-sage/cmd/logsage@latest
-```
-
 ### Download binary
 
 Prebuilt binaries for Linux, macOS, and Windows are available on the [releases](https://github.com/Urealaden/log-sage/releases) page.
 
-> Package manager support (Homebrew, Scoop, Chocolatey) is planned for a post-v1 release.
+> Maintainers: Release Please PRs use a PAT-backed `RELEASE_PLEASE_TOKEN` secret so normal PR workflows can run; `GITHUB_TOKEN` is not sufficient for that trigger path.
 
+### Go install
+
+```bash
+go install github.com/Urealaden/log-sage/cmd/logsage@latest
+```
+
+### Build from source
+
+```bash
+git clone https://github.com/Urealaden/log-sage.git
+cd log-sage
+go build ./cmd/logsage
+```
+
+> Coming soon: Homebrew / Scoop / Chocolatey
+
+---
+
+## Quick Start
+
+```bash
+logsage ci build.log
+logsage k8s pod my-pod --namespace production
+```
+
+---
 
 ## Usage
 
 Analyze a log file:
 
-```
-logsage analyze logs.txt
+```bash
+logsage analyze server.log
 ```
 
-Analyze piped logs:
+Analyze piped input:
 
-```
+```bash
 kubectl logs my-pod | logsage analyze --stdin
 ```
 
-Analyze a Kubernetes pod directly:
-```
-logsage k8s pod my-service --namespace production
-```
-
 Analyze CI logs:
-```
+
+```bash
 logsage ci build.log
 ```
 
-Output JSON:
+Analyze a Kubernetes pod directly:
+
+```bash
+logsage k8s pod my-pod --namespace production
 ```
-logsage analyze logs.txt --json
+
+### Output flags
+
+```bash
+logsage analyze server.log --json       # machine-readable JSON
+logsage analyze server.log --quiet      # class and confidence only
+logsage analyze server.log --top 3      # limit to top N results
 ```
-
-
-## Detects Common Failures
-
-LogSage detects:
-
-- OutOfMemory / OOMKilled
-- CrashLoopBackOff
-- ConnectionRefused
-- DNSFailure
-- MissingEnvVar
-- ImagePullBackOff
-- TLSFailure
-- PermissionDenied
-- DiskFull
-- DependencyTimeout
-- Panic
-- PortBindingFailure
-
-
-## Why LogSage?
-
-Debugging production failures often means manually searching through thousands of log lines.
-
-LogSage speeds this up by:
-
-1. Extracting meaningful signals from logs
-2. Detecting known failure patterns
-3. Ranking the most likely root causes
-4. Showing evidence and recommended debugging steps
-
-The goal is simple:
-
-Turn logs into **diagnosis**, not just data.
 
 ---
 
-## How It Works
+## CI Summary Mode
 
-LogSage uses a deterministic analysis engine.
+`--ci-summary` produces compact, human-readable output suitable for CI annotations and pull request comments.
 
-```
-              Logs
-                ↓
-          Normalization
-                ↓
-        Signal Extraction
-                ↓
-         Issue Detection
-                ↓
-        Hypothesis Ranking
-                ↓
-    Evidence + Recommendations
+```bash
+logsage ci --ci-summary build.log
 ```
 
-The engine is written in Go and designed to be reused by:
+```text
+Top Cause: OutOfMemory (high confidence)
 
-- CLI tools
-- CI integrations
-- Kubernetes debugging tools
-- IDE plugins
+Evidence:
+- container terminated with exit code 137
+- reason: OOMKilled
+
+Recommended Action:
+- run `kubectl describe pod <pod-name>` to confirm memory limit
+- increase container memory limit if necessary
+```
+
+`--ci-summary` is mutually exclusive with `--json` and `--quiet`.
+
+---
+
+## Kubernetes Logs
+
+Fetch and analyze logs from a running Kubernetes pod:
+
+```bash
+logsage k8s pod my-pod --namespace production
+```
+
+LogSage fetches both `kubectl logs` and `kubectl describe pod` output and analyzes them as a single input.
+
+---
+
+## Example Output
+
+Example output from the default analysis mode:
+
+```text
+Top Likely Causes
+
+1. OutOfMemory (high confidence)
+
+Evidence
+- container terminated with exit code 137
+- reason: OOMKilled
+
+Suggested Commands
+- kubectl describe pod my-app
+- kubectl top pod my-app
+
+Recommended Next Steps
+- confirm memory limits in deployment
+- increase container memory allocation
+```
+
+---
+
+## Architecture
+
+LogSage uses a deterministic five-stage analysis pipeline:
+
+```
+normalize → extract → detect → score → recommend
+```
+
+- **normalize** — parse plaintext, JSON, or logfmt log entries into structured form
+- **extract** — identify meaningful signals (errors, patterns, counts)
+- **detect** — match signals against 12 known issue class definitions
+- **score** — rank candidates by confidence (high / medium / low)
+- **recommend** — generate suggested commands and next steps
+
+The engine (`internal/engine`) is a reusable Go package with no dependency on the CLI. All analysis logic is accessible through a single `Analyze(ctx, DiagnosticInput) (*AnalysisResult, error)` interface.
+
+---
+
+## Testing
+
+LogSage maintains an incident regression corpus at `testdata/incidents/`. Each incident directory contains a representative log sample and an `expected.json` schema defining the required issue classes, minimum confidence, and required evidence.
+
+The corpus integration test (`internal/engine/corpus_test.go`) runs all samples against the engine on every build, preventing detection regressions.
+
+To run the full test suite:
+
+```bash
+go test ./...
+```
+
+---
+
+## Development
+
+Build the binary:
+
+```bash
+go build ./cmd/logsage
+```
+
+Run all tests:
+
+```bash
+go test ./...
+```
+
+Run engine tests only:
+
+```bash
+go test ./internal/engine/...
+```
+
+Run the linter:
+
+```bash
+make run-lint
+```
+
+The linter uses `golangci-lint` with `errcheck`, `govet`, `staticcheck`, `unused`, `gofmt`, and `goimports`.
 
 ---
 
 ## Contributing
 
-LogSage is early and contributions are welcome.
+Contributions are welcome.
 
-Areas where help is especially useful:
+**Before opening a PR:**
 
-- new failure detectors
-- additional incident test cases
-- performance improvements
-- Kubernetes integrations
+1. Run `go test ./...` — all tests must pass
+2. Run `make run-lint` — no lint errors
+3. Add or update tests for any changed behavior
+4. If adding a new failure detector, add a corresponding fixture under `testdata/incidents/`
 
+**Project structure:**
 
-## Roadmap
+```
+cmd/logsage/           # CLI entry point
+internal/
+  engine/              # Public analysis interface
+  normalization/       # Log parsing (plaintext, JSON, logfmt)
+  extraction/          # Signal extraction
+  detection/           # Issue class definitions and rule evaluation
+  scoring/             # Hypothesis ranking and confidence
+  recommendation/      # Next-step and command generation
+pkg/types/             # Shared public types
+testdata/incidents/    # Incident regression corpus
+```
 
-- incident timeline reconstruction
-- VS Code integration
-- AI-assisted explanation improvements
-- web UI / SaaS platform
+Areas where contributions are especially useful:
 
+- New failure detector definitions (`internal/detection/`)
+- Additional incident corpus samples (`testdata/incidents/`)
+- Kubernetes adapter improvements (`internal/adapters/`)
+
+---
 
 ## License
 
