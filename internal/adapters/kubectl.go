@@ -26,7 +26,7 @@ func NewWithRunner(r Runner) *KubectlAdapter {
 }
 
 func defaultRunner(name string, args ...string) ([]byte, error) {
-	return exec.Command(name, args...).Output()
+	return exec.Command(name, args...).CombinedOutput()
 }
 
 // Fetch runs kubectl logs and kubectl describe pod for pod in namespace,

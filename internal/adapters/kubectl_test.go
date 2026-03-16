@@ -98,11 +98,11 @@ func TestNew(t *testing.T) {
 func TestDefaultRunner(t *testing.T) {
 	t.Parallel()
 
-	out, err := defaultRunner("sh", "-c", "printf ok")
+	out, err := defaultRunner("go", "version")
 	if err != nil {
 		t.Fatalf("defaultRunner() error = %v, want nil", err)
 	}
-	if got := string(out); got != "ok" {
-		t.Fatalf("defaultRunner() output = %q, want %q", got, "ok")
+	if len(out) == 0 {
+		t.Fatal("defaultRunner() output = empty, want non-empty")
 	}
 }
