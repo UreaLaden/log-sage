@@ -256,4 +256,48 @@ var IssueRegistry = []types.IssueClass{
 			"ss -ltnp",
 		},
 	},
+	{
+		Name: "CIPermissionDenied",
+		PrimarySignals: []types.SignalPattern{
+			{Name: "actions-pr-permission", SignalType: "CIPermissionDenied", MatchExpression: "GitHub Actions is not permitted to create or approve pull requests", Weight: 1.0},
+			{Name: "resource-not-accessible", SignalType: "CIPermissionDenied", MatchExpression: "Resource not accessible by integration", Weight: 0.8},
+		},
+		CorroboratingSignals: []types.SignalPattern{
+			{Name: "pull-requests-write", SignalType: "CIPermissionDenied", MatchExpression: "pull-requests: write", Weight: 0.3},
+		},
+		ExplanationTemplate: "The GitHub Actions workflow was blocked from creating or approving a pull request due to insufficient token permissions.",
+		NextSteps: []string{
+			"Enable 'Allow GitHub Actions to create and approve pull requests' in repo Settings → Actions → General.",
+			"Add `pull-requests: write` to the workflow permissions block, or use a PAT-backed secret instead of GITHUB_TOKEN.",
+			"Check organization-level Actions policies that may override repository settings.",
+		},
+		Commands: []string{
+			"gh api repos/{owner}/{repo}/actions/permissions",
+			"gh repo edit --enable-auto-merge",
+		},
+	},
+	{
+		Name: "MissingSecretOrAuthFailure",
+		PrimarySignals: []types.SignalPattern{
+			{Name: "input-required-not-supplied", SignalType: "MissingSecretOrAuthFailure", MatchExpression: "Input required and not supplied", Weight: 1.0},
+			{Name: "401-unauthorized", SignalType: "MissingSecretOrAuthFailure", MatchExpression: "401 Unauthorized", Weight: 0.9},
+			{Name: "authentication-failed", SignalType: "MissingSecretOrAuthFailure", MatchExpression: "authentication failed", Weight: 0.9},
+			{Name: "credentials-not-found", SignalType: "MissingSecretOrAuthFailure", MatchExpression: "credentials not found", Weight: 0.8},
+			{Name: "unauthorized-auth-required", SignalType: "MissingSecretOrAuthFailure", MatchExpression: "unauthorized: authentication required", Weight: 0.8},
+			{Name: "npm-e401", SignalType: "MissingSecretOrAuthFailure", MatchExpression: "npm ERR! code E401", Weight: 0.8},
+		},
+		CorroboratingSignals: []types.SignalPattern{
+			{Name: "secret-not-found", SignalType: "MissingSecretOrAuthFailure", MatchExpression: "secret not found", Weight: 0.4},
+		},
+		ExplanationTemplate: "The CI pipeline failed due to a missing secret, invalid credentials, or an unauthenticated access attempt.",
+		NextSteps: []string{
+			"Verify that required secrets are configured in repository or organization Settings → Secrets.",
+			"Confirm the secret name in the workflow matches the configured secret exactly (case-sensitive).",
+			"Check that the token or credential has the required scopes for the failing operation.",
+		},
+		Commands: []string{
+			"gh secret list",
+			"gh secret list --org <org>",
+		},
+	},
 }
