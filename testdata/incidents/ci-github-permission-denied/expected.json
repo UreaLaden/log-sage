@@ -1,0 +1,9 @@
+{
+  "issue_classes": [
+    "CIPermissionDenied"
+  ],
+  "min_confidence": "medium",
+  "required_evidence": [
+    "GitHub Actions is not permitted to create or approve pull requests"
+  ]
+}

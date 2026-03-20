@@ -1,0 +1,10 @@
+{
+  "issue_classes": [
+    "MissingSecretOrAuthFailure"
+  ],
+  "min_confidence": "medium",
+  "required_evidence": [
+    "Input required and not supplied",
+    "401 Unauthorized"
+  ]
+}

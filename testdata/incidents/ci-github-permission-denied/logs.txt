@@ -1,0 +1,5 @@
+2026-03-16T12:41:38.8069613Z ✔ Starting GitHub PR workflow...
+2026-03-16T12:41:39.0986042Z ✔ Successfully found branch HEAD sha "b7349adc92654d315d9acef1284df2c6aec33f69".
+2026-03-16T12:41:39.6649798Z ✔ Successfully created branch at https://api.github.com/repos/UreaLaden/log-sage/git/refs/heads/release-please--branches--main
+2026-03-16T12:41:40.5235501Z ✔ Successfully created commit. See commit at https://api.github.com/repos/UreaLaden/log-sage/git/commits/50d4d5f06f27420a934614cbb84eab155beef808
+2026-03-16T12:41:41.2762765Z ##[error]release-please failed: GitHub Actions is not permitted to create or approve pull requests. - https://docs.github.com/rest/pulls/pulls#create-a-pull-request

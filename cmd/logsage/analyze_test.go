@@ -698,8 +698,8 @@ func TestRootCmdHelpAndVersion(t *testing.T) {
 		if err := root.Execute(); err != nil {
 			t.Fatalf("Execute() error = %v", err)
 		}
-		if got := out.String(); got != "logsage version "+version+"\n" {
-			t.Fatalf("output = %q, want %q", got, "logsage version "+version+"\n")
+		if got := out.String(); got != "logsage version "+Version+"\n" {
+			t.Fatalf("output = %q, want %q", got, "logsage version "+Version+"\n")
 		}
 	})
 
@@ -714,8 +714,8 @@ func TestRootCmdHelpAndVersion(t *testing.T) {
 		if err := root.Execute(); err != nil {
 			t.Fatalf("Execute() error = %v", err)
 		}
-		if got := out.String(); got != version+"\n" {
-			t.Fatalf("output = %q, want %q", got, version+"\n")
+		if got := out.String(); got != Version+"\n" {
+			t.Fatalf("output = %q, want %q", got, Version+"\n")
 		}
 	})
 
@@ -781,8 +781,8 @@ func TestRun(t *testing.T) {
 		if _, err := io.Copy(&out, r); err != nil {
 			t.Fatalf("io.Copy() error = %v", err)
 		}
-		if got := out.String(); got != version+"\n" {
-			t.Fatalf("output = %q, want %q", got, version+"\n")
+		if got := out.String(); got != Version+"\n" {
+			t.Fatalf("output = %q, want %q", got, Version+"\n")
 		}
 	})
 
@@ -890,8 +890,8 @@ func TestMainUsesRunExitCode(t *testing.T) {
 		if _, err := io.Copy(&out, r); err != nil {
 			t.Fatalf("io.Copy() error = %v", err)
 		}
-		if got := out.String(); got != version+"\n" {
-			t.Fatalf("output = %q, want %q", got, version+"\n")
+		if got := out.String(); got != Version+"\n" {
+			t.Fatalf("output = %q, want %q", got, Version+"\n")
 		}
 	})
 

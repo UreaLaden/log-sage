@@ -407,3 +407,55 @@ func TestPortBindingFailureDetector(t *testing.T) {
 		assertEmptySignalsSafe(t, class)
 	})
 }
+
+func TestCIPermissionDeniedDetector(t *testing.T) {
+	t.Parallel()
+	class := classFromRegistry(t, "CIPermissionDenied")
+
+	t.Run("ci-permission-denied-sample.log triggers hypothesis", func(t *testing.T) {
+		t.Parallel()
+		signals := signalsFromFixture(t, "ci-permission-denied-sample.log", patternsForClass(class))
+		got := (DefaultDetector{Class: class}).Detect(signals)
+		assertOneHypothesis(t, got, "CIPermissionDenied")
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
+		got := (DefaultDetector{Class: class}).Detect(signals)
+		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
+	})
+}
+
+func TestMissingSecretOrAuthFailureDetector(t *testing.T) {
+	t.Parallel()
+	class := classFromRegistry(t, "MissingSecretOrAuthFailure")
+
+	t.Run("ci-missing-secret-sample.log triggers hypothesis", func(t *testing.T) {
+		t.Parallel()
+		signals := signalsFromFixture(t, "ci-missing-secret-sample.log", patternsForClass(class))
+		got := (DefaultDetector{Class: class}).Detect(signals)
+		assertOneHypothesis(t, got, "MissingSecretOrAuthFailure")
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("healthy-startup.log produces no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		signals := signalsFromFixture(t, "healthy-startup.log", patternsForClass(class))
+		got := (DefaultDetector{Class: class}).Detect(signals)
+		assertNoHypothesis(t, got)
+		assertDeterministicDetection(t, class, signals)
+	})
+
+	t.Run("empty signals produce no hypothesis", func(t *testing.T) {
+		t.Parallel()
+		assertEmptySignalsSafe(t, class)
+	})
+}

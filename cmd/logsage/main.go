@@ -7,8 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const version = "0.0.0-dev"
-
 var exit = os.Exit
 
 func main() {
@@ -32,7 +30,7 @@ func newRootCmd() *cobra.Command {
 		Short:         "LogSage analyzes logs to identify likely root causes.",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Version:       version,
+		Version:       Version,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if showVersion {
 				if _, err := fmt.Fprintln(cmd.OutOrStdout(), cmd.Version); err != nil {
@@ -59,7 +57,7 @@ func newVersionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Print the logsage version",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if _, err := fmt.Fprintln(cmd.OutOrStdout(), version); err != nil {
+			if _, err := fmt.Fprintln(cmd.OutOrStdout(), Version); err != nil {
 				return err
 			}
 			return nil

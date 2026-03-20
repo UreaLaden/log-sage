@@ -47,11 +47,94 @@ LogSage speeds this up by:
 
 ## Installation
 
-### Download binary
-
 Prebuilt binaries for Linux, macOS, and Windows are available on the [releases](https://github.com/Urealaden/log-sage/releases) page.
 
 > Maintainers: Release Please PRs use a PAT-backed `RELEASE_PLEASE_TOKEN` secret so normal PR workflows can run; `GITHUB_TOKEN` is not sufficient for that trigger path.
+
+### macOS
+
+Apple Silicon (`arm64`):
+
+```bash
+curl -fsSL -o logsage_1.0.0_darwin_arm64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.0/logsage_1.0.0_darwin_arm64.tar.gz
+tar -xzf logsage_1.0.0_darwin_arm64.tar.gz
+chmod +x logsage
+mkdir -p "$HOME/bin"
+mv logsage "$HOME/bin/logsage"
+export PATH="$HOME/bin:$PATH"
+logsage version
+```
+
+Intel (`amd64`):
+
+```bash
+curl -fsSL -o logsage_1.0.0_darwin_amd64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.0/logsage_1.0.0_darwin_amd64.tar.gz
+tar -xzf logsage_1.0.0_darwin_amd64.tar.gz
+chmod +x logsage
+sudo mv logsage /usr/local/bin/logsage
+logsage version
+```
+
+Browser fallback:
+- Open the [latest release](https://github.com/UreaLaden/log-sage/releases/latest)
+- Download the matching `darwin` archive for your Mac
+- Extract it and move `logsage` into `/usr/local/bin` or `~/bin`
+
+### Linux
+
+Linux `amd64`:
+
+```bash
+curl -fsSL -o logsage_1.0.0_linux_amd64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.0/logsage_1.0.0_linux_amd64.tar.gz
+tar -xzf logsage_1.0.0_linux_amd64.tar.gz
+chmod +x logsage
+sudo mv logsage /usr/local/bin/logsage
+logsage version
+```
+
+Linux `arm64`:
+
+```bash
+curl -fsSL -o logsage_1.0.0_linux_arm64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.0/logsage_1.0.0_linux_arm64.tar.gz
+tar -xzf logsage_1.0.0_linux_arm64.tar.gz
+chmod +x logsage
+mkdir -p "$HOME/bin"
+mv logsage "$HOME/bin/logsage"
+export PATH="$HOME/bin:$PATH"
+logsage version
+```
+
+Browser fallback:
+- Open the [latest release](https://github.com/UreaLaden/log-sage/releases/latest)
+- Download the matching `linux` archive for your CPU
+- Extract it and move `logsage` into `/usr/local/bin` or `~/bin`
+
+### Windows
+
+PowerShell (`windows_amd64`):
+
+If `Expand-Archive` fails because PowerShell module autoload is blocked by execution
+policy on your machine, start a temporary shell with:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass
+```
+
+Then run:
+
+```powershell
+Invoke-WebRequest -Uri "https://github.com/UreaLaden/log-sage/releases/download/v1.0.0/logsage_1.0.0_windows_amd64.zip" -OutFile "logsage_1.0.0_windows_amd64.zip"
+Expand-Archive -Path ".\logsage_1.0.0_windows_amd64.zip" -DestinationPath ".\logsage"
+New-Item -ItemType Directory -Force "$HOME\bin" | Out-Null
+Move-Item ".\logsage\logsage.exe" "$HOME\bin\logsage.exe" -Force
+$env:Path = "$HOME\bin;$env:Path"
+logsage.exe version
+```
+
+Browser fallback:
+- Open the [latest release](https://github.com/UreaLaden/log-sage/releases/latest)
+- Download `logsage_1.0.0_windows_amd64.zip`
+- Extract it and move `logsage.exe` into a folder on your `PATH` such as `%USERPROFILE%\bin`
 
 ### Go install
 
@@ -74,8 +157,8 @@ go build ./cmd/logsage
 ## Quick Start
 
 ```bash
-logsage ci build.log
-logsage k8s pod my-pod --namespace production
+logsage analyze server.log
+cat server.log | logsage analyze --stdin
 ```
 
 ---
