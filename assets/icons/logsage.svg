@@ -1,0 +1,188 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LogSage mark">
+  <defs>
+    <radialGradient id="bgGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(610 510) rotate(180) scale(520 420)">
+      <stop offset="0%" stop-color="#131044"></stop>
+      <stop offset="55%" stop-color="#09061A"></stop>
+      <stop offset="100%" stop-color="#050311"></stop>
+    </radialGradient>
+
+    <radialGradient id="coreGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(608 510) rotate(90) scale(72)">
+      <stop offset="0%" stop-color="#FFFFFF"></stop>
+      <stop offset="18%" stop-color="#D9D9FF"></stop>
+      <stop offset="42%" stop-color="#8E82FF"></stop>
+      <stop offset="75%" stop-color="#4D43B8" stop-opacity="0.42"></stop>
+      <stop offset="100%" stop-color="#4D43B8" stop-opacity="0"></stop>
+    </radialGradient>
+
+    <linearGradient id="dotGrad" x1="240" y1="512" x2="820" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7A74FF"></stop>
+      <stop offset="60%" stop-color="#A3A8FF"></stop>
+      <stop offset="100%" stop-color="#E8E9FF"></stop>
+    </linearGradient>
+
+    <filter id="softBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8"></feGaussianBlur>
+    </filter>
+
+    <filter id="tinyGlow" x="-200%" y="-200%" width="400%" height="400%">
+      <feGaussianBlur stdDeviation="1.8" result="blur"></feGaussianBlur>
+      <feMerge>
+        <feMergeNode in="blur"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bgGlow)"></rect>
+
+  <!-- ambient core -->
+  <circle cx="608" cy="510" r="140" fill="url(#coreGlow)"></circle>
+
+  <!-- subtle directional threads -->
+  <g stroke="#B8BAFF" stroke-opacity="0.16" stroke-linecap="round">
+    <path d="M248 622 C328 602, 412 566, 516 528" stroke-width="1.6"></path>
+    <path d="M278 544 C360 536, 438 528, 558 516" stroke-width="1.4"></path>
+    <path d="M300 458 C388 474, 470 488, 566 502" stroke-width="1.2"></path>
+    <path d="M320 388 C410 430, 496 468, 580 498" stroke-width="1.1"></path>
+    <path d="M336 690 C418 648, 500 596, 572 532" stroke-width="1.2"></path>
+    <path d="M394 740 C460 682, 528 620, 590 544" stroke-width="1.0"></path>
+    <path d="M372 322 C452 390, 520 440, 586 490" stroke-width="1.0"></path>
+  </g>
+
+  <!-- outer irregular field -->
+  <g fill="url(#dotGrad)" filter="url(#tinyGlow)">
+    <circle cx="144" cy="603" r="4"></circle>
+    <circle cx="201" cy="447" r="5.5"></circle>
+    <circle cx="213" cy="708" r="6"></circle>
+    <circle cx="247" cy="319" r="7"></circle>
+    <circle cx="256" cy="522" r="6.5"></circle>
+    <circle cx="284" cy="801" r="5.5"></circle>
+    <circle cx="309" cy="271" r="4.5"></circle>
+    <circle cx="320" cy="657" r="6"></circle>
+    <circle cx="336" cy="390" r="5"></circle>
+    <circle cx="359" cy="873" r="5"></circle>
+    <circle cx="374" cy="229" r="4"></circle>
+    <circle cx="390" cy="588" r="4.6"></circle>
+    <circle cx="410" cy="433" r="4.4"></circle>
+    <circle cx="426" cy="748" r="4.3"></circle>
+    <circle cx="456" cy="290" r="4.8"></circle>
+    <circle cx="463" cy="641" r="4.2"></circle>
+    <circle cx="486" cy="818" r="3.8"></circle>
+    <circle cx="508" cy="224" r="3.8"></circle>
+    <circle cx="520" cy="356" r="3.4"></circle>
+    <circle cx="528" cy="706" r="3.6"></circle>
+    <circle cx="760" cy="338" r="3.8"></circle>
+    <circle cx="786" cy="430" r="3.6"></circle>
+    <circle cx="801" cy="612" r="3.8"></circle>
+    <circle cx="746" cy="731" r="3.4"></circle>
+    <circle cx="853" cy="510" r="3.5"></circle>
+    <circle cx="828" cy="560" r="3.1"></circle>
+    <circle cx="842" cy="422" r="2.9"></circle>
+  </g>
+
+  <!-- transitional field -->
+  <g fill="url(#dotGrad)">
+    <circle cx="286" cy="592" r="7.2"></circle>
+    <circle cx="301" cy="546" r="6.2"></circle>
+    <circle cx="318" cy="496" r="5.5"></circle>
+    <circle cx="332" cy="448" r="5.6"></circle>
+    <circle cx="352" cy="405" r="5.1"></circle>
+    <circle cx="366" cy="621" r="6.6"></circle>
+    <circle cx="382" cy="566" r="5.7"></circle>
+    <circle cx="396" cy="518" r="5.2"></circle>
+    <circle cx="411" cy="470" r="4.8"></circle>
+    <circle cx="432" cy="424" r="4.4"></circle>
+    <circle cx="440" cy="677" r="5.2"></circle>
+    <circle cx="458" cy="611" r="4.8"></circle>
+    <circle cx="474" cy="560" r="4.5"></circle>
+    <circle cx="486" cy="513" r="4.2"></circle>
+    <circle cx="500" cy="462" r="4.0"></circle>
+    <circle cx="521" cy="418" r="3.8"></circle>
+    <circle cx="336" cy="693" r="5.1"></circle>
+    <circle cx="356" cy="733" r="4.4"></circle>
+    <circle cx="399" cy="365" r="4.2"></circle>
+    <circle cx="433" cy="329" r="3.8"></circle>
+    <circle cx="548" cy="339" r="3.5"></circle>
+    <circle cx="568" cy="689" r="3.4"></circle>
+    <circle cx="607" cy="302" r="3.2"></circle>
+    <circle cx="646" cy="352" r="3.2"></circle>
+    <circle cx="673" cy="421" r="3.0"></circle>
+    <circle cx="692" cy="489" r="2.9"></circle>
+    <circle cx="687" cy="550" r="3.0"></circle>
+    <circle cx="672" cy="613" r="3.0"></circle>
+    <circle cx="646" cy="671" r="3.1"></circle>
+    <circle cx="612" cy="713" r="3.0"></circle>
+  </g>
+
+  <!-- inner structured field -->
+  <g fill="url(#dotGrad)">
+    <!-- ring 1 -->
+    <circle cx="520" cy="510" r="2.7"></circle>
+    <circle cx="532" cy="468" r="2.5"></circle>
+    <circle cx="560" cy="438" r="2.5"></circle>
+    <circle cx="602" cy="424" r="2.5"></circle>
+    <circle cx="646" cy="432" r="2.5"></circle>
+    <circle cx="680" cy="456" r="2.5"></circle>
+    <circle cx="702" cy="492" r="2.5"></circle>
+    <circle cx="706" cy="534" r="2.5"></circle>
+    <circle cx="692" cy="574" r="2.5"></circle>
+    <circle cx="664" cy="606" r="2.5"></circle>
+    <circle cx="624" cy="622" r="2.5"></circle>
+    <circle cx="582" cy="620" r="2.5"></circle>
+    <circle cx="548" cy="602" r="2.5"></circle>
+    <circle cx="526" cy="568" r="2.5"></circle>
+
+    <!-- ring 2 -->
+    <circle cx="542" cy="510" r="2.2"></circle>
+    <circle cx="550" cy="482" r="2.2"></circle>
+    <circle cx="570" cy="458" r="2.2"></circle>
+    <circle cx="598" cy="446" r="2.2"></circle>
+    <circle cx="628" cy="450" r="2.2"></circle>
+    <circle cx="652" cy="466" r="2.2"></circle>
+    <circle cx="668" cy="490" r="2.2"></circle>
+    <circle cx="672" cy="520" r="2.2"></circle>
+    <circle cx="662" cy="548" r="2.2"></circle>
+    <circle cx="642" cy="572" r="2.2"></circle>
+    <circle cx="614" cy="584" r="2.2"></circle>
+    <circle cx="586" cy="580" r="2.2"></circle>
+    <circle cx="562" cy="564" r="2.2"></circle>
+    <circle cx="546" cy="540" r="2.2"></circle>
+
+    <!-- ring 3 -->
+    <circle cx="562" cy="510" r="1.9"></circle>
+    <circle cx="568" cy="490" r="1.9"></circle>
+    <circle cx="582" cy="474" r="1.9"></circle>
+    <circle cx="602" cy="466" r="1.9"></circle>
+    <circle cx="624" cy="468" r="1.9"></circle>
+    <circle cx="642" cy="480" r="1.9"></circle>
+    <circle cx="652" cy="498" r="1.9"></circle>
+    <circle cx="654" cy="520" r="1.9"></circle>
+    <circle cx="646" cy="540" r="1.9"></circle>
+    <circle cx="632" cy="556" r="1.9"></circle>
+    <circle cx="612" cy="564" r="1.9"></circle>
+    <circle cx="592" cy="562" r="1.9"></circle>
+    <circle cx="574" cy="550" r="1.9"></circle>
+    <circle cx="564" cy="532" r="1.9"></circle>
+
+    <!-- inner lattice -->
+    <circle cx="580" cy="510" r="1.6"></circle>
+    <circle cx="586" cy="494" r="1.6"></circle>
+    <circle cx="598" cy="484" r="1.6"></circle>
+    <circle cx="614" cy="480" r="1.6"></circle>
+    <circle cx="628" cy="486" r="1.6"></circle>
+    <circle cx="638" cy="498" r="1.6"></circle>
+    <circle cx="642" cy="514" r="1.6"></circle>
+    <circle cx="636" cy="530" r="1.6"></circle>
+    <circle cx="624" cy="540" r="1.6"></circle>
+    <circle cx="608" cy="544" r="1.6"></circle>
+    <circle cx="594" cy="538" r="1.6"></circle>
+    <circle cx="584" cy="526" r="1.6"></circle>
+  </g>
+
+  <!-- focused center -->
+  <g>
+    <circle cx="608" cy="510" r="18" fill="#FFFFFF"></circle>
+    <circle cx="608" cy="510" r="34" fill="#A39EFF" opacity="0.38" filter="url(#softBlur)"></circle>
+    <circle cx="608" cy="510" r="52" fill="#766BFF" opacity="0.18" filter="url(#softBlur)"></circle>
+  </g>
+</svg>
