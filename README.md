@@ -2,6 +2,22 @@
 
 LogSage analyzes logs and identifies the most likely root causes of system failures — returning ranked hypotheses with supporting evidence and suggested debugging steps.
 
+## Quick Reference
+
+- [10-Second Demo](#10-second-demo)
+- [Why LogSage](#why-logsage)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+- [CI Summary Mode](#ci-summary-mode)
+- [Kubernetes Logs](#kubernetes-logs)
+- [Example Output](#example-output)
+- [Architecture](#architecture)
+- [Testing](#testing)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
+
 <!-- TODO: add badges once CI and release pipeline are verified -->
 
 ---
@@ -56,8 +72,8 @@ Prebuilt binaries for Linux, macOS, and Windows are available on the [releases](
 Apple Silicon (`arm64`):
 
 ```bash
-curl -fsSL -o logsage_1.0.0_darwin_arm64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.0/logsage_1.0.0_darwin_arm64.tar.gz
-tar -xzf logsage_1.0.0_darwin_arm64.tar.gz
+curl -fsSL -o logsage_1.0.1_darwin_arm64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.1/logsage_1.0.1_darwin_arm64.tar.gz
+tar -xzf logsage_1.0.1_darwin_arm64.tar.gz
 chmod +x logsage
 mkdir -p "$HOME/bin"
 mv logsage "$HOME/bin/logsage"
@@ -68,8 +84,8 @@ logsage version
 Intel (`amd64`):
 
 ```bash
-curl -fsSL -o logsage_1.0.0_darwin_amd64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.0/logsage_1.0.0_darwin_amd64.tar.gz
-tar -xzf logsage_1.0.0_darwin_amd64.tar.gz
+curl -fsSL -o logsage_1.0.1_darwin_amd64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.1/logsage_1.0.1_darwin_amd64.tar.gz
+tar -xzf logsage_1.0.1_darwin_amd64.tar.gz
 chmod +x logsage
 sudo mv logsage /usr/local/bin/logsage
 logsage version
@@ -85,8 +101,8 @@ Browser fallback:
 Linux `amd64`:
 
 ```bash
-curl -fsSL -o logsage_1.0.0_linux_amd64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.0/logsage_1.0.0_linux_amd64.tar.gz
-tar -xzf logsage_1.0.0_linux_amd64.tar.gz
+curl -fsSL -o logsage_1.0.1_linux_amd64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.1/logsage_1.0.1_linux_amd64.tar.gz
+tar -xzf logsage_1.0.1_linux_amd64.tar.gz
 chmod +x logsage
 sudo mv logsage /usr/local/bin/logsage
 logsage version
@@ -95,8 +111,8 @@ logsage version
 Linux `arm64`:
 
 ```bash
-curl -fsSL -o logsage_1.0.0_linux_arm64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.0/logsage_1.0.0_linux_arm64.tar.gz
-tar -xzf logsage_1.0.0_linux_arm64.tar.gz
+curl -fsSL -o logsage_1.0.1_linux_arm64.tar.gz https://github.com/UreaLaden/log-sage/releases/download/v1.0.1/logsage_1.0.1_linux_arm64.tar.gz
+tar -xzf logsage_1.0.1_linux_arm64.tar.gz
 chmod +x logsage
 mkdir -p "$HOME/bin"
 mv logsage "$HOME/bin/logsage"
@@ -123,8 +139,8 @@ powershell.exe -ExecutionPolicy Bypass
 Then run:
 
 ```powershell
-Invoke-WebRequest -Uri "https://github.com/UreaLaden/log-sage/releases/download/v1.0.0/logsage_1.0.0_windows_amd64.zip" -OutFile "logsage_1.0.0_windows_amd64.zip"
-Expand-Archive -Path ".\logsage_1.0.0_windows_amd64.zip" -DestinationPath ".\logsage"
+Invoke-WebRequest -Uri "https://github.com/UreaLaden/log-sage/releases/download/v1.0.1/logsage_1.0.1_windows_amd64.zip" -OutFile "logsage_1.0.1_windows_amd64.zip"
+Expand-Archive -Path ".\logsage_1.0.1_windows_amd64.zip" -DestinationPath ".\logsage"
 New-Item -ItemType Directory -Force "$HOME\bin" | Out-Null
 Move-Item ".\logsage\logsage.exe" "$HOME\bin\logsage.exe" -Force
 $env:Path = "$HOME\bin;$env:Path"
@@ -133,7 +149,7 @@ logsage.exe version
 
 Browser fallback:
 - Open the [latest release](https://github.com/UreaLaden/log-sage/releases/latest)
-- Download `logsage_1.0.0_windows_amd64.zip`
+- Download `logsage_1.0.1_windows_amd64.zip`
 - Extract it and move `logsage.exe` into a folder on your `PATH` such as `%USERPROFILE%\bin`
 
 ### Go install
@@ -150,7 +166,44 @@ cd log-sage
 go build ./cmd/logsage
 ```
 
-> Coming soon: Homebrew / Scoop / Chocolatey
+### Homebrew (macOS and Linux)
+
+```bash
+brew tap UreaLaden/logsage
+brew install logsage
+logsage version
+```
+
+To upgrade:
+
+```bash
+brew upgrade logsage
+```
+
+### Scoop (Windows)
+
+```powershell
+scoop bucket add logsage https://github.com/UreaLaden/scoop-logsage
+scoop install logsage
+logsage version
+```
+
+To upgrade:
+
+```powershell
+scoop update logsage
+```
+
+### Chocolatey (Windows — local install)
+
+```powershell
+choco install logsage --source path\to\chocolatey-logsage
+logsage version
+```
+
+> The Chocolatey package is maintained at
+> [UreaLaden/chocolatey-logsage](https://github.com/UreaLaden/chocolatey-logsage).
+> It is not published to the Chocolatey community feed.
 
 ---
 

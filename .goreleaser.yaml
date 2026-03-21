@@ -38,5 +38,36 @@ checksum:
   name_template: checksums.txt
   algorithm: sha256
 
+brews:
+  - name: logsage
+    ids:
+      - logsage
+    repository:
+      owner: UreaLaden
+      name: homebrew-logsage
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/UreaLaden/log-sage"
+    description: "AI-powered log analysis CLI that identifies root causes of system failures"
+    license: "MIT"
+    url_template: "https://github.com/UreaLaden/log-sage/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    test: |
+      system "#{bin}/logsage version"
+    install: |
+      bin.install "logsage"
+
+scoops:
+  - name: logsage
+    ids:
+      - logsage
+    repository:
+      owner: UreaLaden
+      name: scoop-logsage
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: bucket
+    homepage: "https://github.com/UreaLaden/log-sage"
+    description: "AI-powered log analysis CLI that identifies root causes of system failures"
+    license: MIT
+
 changelog:
   disable: true
