@@ -1,0 +1,152 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LogSage mark revised">
+  <defs>
+    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(610 520) rotate(180) scale(560 460)">
+      <stop offset="0%" stop-color="#120F3C"/>
+      <stop offset="55%" stop-color="#09061A"/>
+      <stop offset="100%" stop-color="#040210"/>
+    </radialGradient>
+    <radialGradient id="core" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(610 520) rotate(90) scale(62)">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="22%" stop-color="#D8DAFF"/>
+      <stop offset="48%" stop-color="#8E82FF"/>
+      <stop offset="100%" stop-color="#8E82FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="dots" x1="180" y1="520" x2="860" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#726CFF"/>
+      <stop offset="55%" stop-color="#A9AEFF"/>
+      <stop offset="100%" stop-color="#ECECFF"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+    <filter id="dotGlow" x="-300%" y="-300%" width="700%" height="700%">
+      <feGaussianBlur stdDeviation="1.4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <ellipse cx="610" cy="520" rx="120" ry="96" fill="url(#core)" opacity="0.5"/>
+
+  <g stroke="#BEC1FF" stroke-opacity="0.14" stroke-linecap="round">
+    <path d="M210 650 C310 620, 410 580, 555 535" stroke-width="1.6"/>
+    <path d="M245 590 C350 575, 450 555, 578 528" stroke-width="1.2"/>
+    <path d="M270 525 C370 525, 470 525, 594 524" stroke-width="1.1"/>
+    <path d="M285 450 C388 468, 482 490, 595 510" stroke-width="1.0"/>
+    <path d="M320 388 C420 430, 510 470, 600 504" stroke-width="1.0"/>
+    <path d="M305 735 C410 678, 500 620, 585 550" stroke-width="1.0"/>
+  </g>
+
+  <g fill="url(#dots)" filter="url(#dotGlow)">
+    <circle cx="132" cy="606" r="4.0"/>
+    <circle cx="186" cy="452" r="5.3"/>
+    <circle cx="201" cy="703" r="5.5"/>
+    <circle cx="247" cy="304" r="6.2"/>
+    <circle cx="260" cy="523" r="5.9"/>
+    <circle cx="284" cy="805" r="5.2"/>
+    <circle cx="304" cy="259" r="4.3"/>
+    <circle cx="314" cy="660" r="5.1"/>
+    <circle cx="332" cy="387" r="4.7"/>
+    <circle cx="355" cy="892" r="4.2"/>
+    <circle cx="370" cy="228" r="3.8"/>
+    <circle cx="392" cy="583" r="4.2"/>
+    <circle cx="413" cy="433" r="4.0"/>
+    <circle cx="426" cy="750" r="4.0"/>
+    <circle cx="451" cy="290" r="4.3"/>
+    <circle cx="470" cy="640" r="4.0"/>
+    <circle cx="486" cy="824" r="3.4"/>
+    <circle cx="510" cy="226" r="3.2"/>
+    <circle cx="775" cy="356" r="3.4"/>
+    <circle cx="811" cy="448" r="3.1"/>
+    <circle cx="828" cy="611" r="3.1"/>
+    <circle cx="778" cy="730" r="2.9"/>
+    <circle cx="860" cy="510" r="2.8"/>
+    <circle cx="846" cy="573" r="2.5"/>
+    <circle cx="852" cy="420" r="2.4"/>
+  </g>
+
+  <g fill="url(#dots)">
+    <circle cx="286" cy="610" r="6.0"/>
+    <circle cx="301" cy="566" r="5.5"/>
+    <circle cx="320" cy="520" r="5.1"/>
+    <circle cx="336" cy="476" r="4.7"/>
+    <circle cx="356" cy="435" r="4.4"/>
+    <circle cx="371" cy="643" r="5.6"/>
+    <circle cx="388" cy="592" r="5.0"/>
+    <circle cx="403" cy="546" r="4.6"/>
+    <circle cx="420" cy="503" r="4.2"/>
+    <circle cx="438" cy="462" r="3.9"/>
+    <circle cx="452" cy="688" r="4.8"/>
+    <circle cx="470" cy="634" r="4.4"/>
+    <circle cx="486" cy="588" r="4.0"/>
+    <circle cx="503" cy="545" r="3.8"/>
+    <circle cx="520" cy="505" r="3.6"/>
+    <circle cx="531" cy="455" r="3.3"/>
+    <circle cx="353" cy="740" r="4.1"/>
+    <circle cx="392" cy="360" r="3.7"/>
+    <circle cx="433" cy="328" r="3.2"/>
+    <circle cx="558" cy="337" r="2.9"/>
+    <circle cx="584" cy="696" r="2.9"/>
+    <circle cx="619" cy="319" r="2.8"/>
+    <circle cx="662" cy="365" r="2.8"/>
+    <circle cx="695" cy="430" r="2.7"/>
+    <circle cx="714" cy="502" r="2.7"/>
+    <circle cx="706" cy="567" r="2.7"/>
+    <circle cx="685" cy="628" r="2.7"/>
+    <circle cx="652" cy="684" r="2.8"/>
+  </g>
+
+  <g fill="url(#dots)">
+    <circle cx="530" cy="521" r="2.6"/>
+    <circle cx="544" cy="486" r="2.5"/>
+    <circle cx="567" cy="460" r="2.5"/>
+    <circle cx="599" cy="444" r="2.5"/>
+    <circle cx="636" cy="446" r="2.5"/>
+    <circle cx="667" cy="462" r="2.5"/>
+    <circle cx="689" cy="490" r="2.5"/>
+    <circle cx="698" cy="526" r="2.5"/>
+    <circle cx="689" cy="560" r="2.5"/>
+    <circle cx="665" cy="588" r="2.5"/>
+    <circle cx="632" cy="604" r="2.5"/>
+    <circle cx="597" cy="606" r="2.5"/>
+    <circle cx="565" cy="590" r="2.5"/>
+    <circle cx="542" cy="562" r="2.5"/>
+
+    <circle cx="553" cy="520" r="2.2"/>
+    <circle cx="563" cy="492" r="2.2"/>
+    <circle cx="582" cy="472" r="2.2"/>
+    <circle cx="608" cy="460" r="2.2"/>
+    <circle cx="635" cy="462" r="2.2"/>
+    <circle cx="658" cy="476" r="2.2"/>
+    <circle cx="674" cy="499" r="2.2"/>
+    <circle cx="679" cy="526" r="2.2"/>
+    <circle cx="671" cy="552" r="2.2"/>
+    <circle cx="651" cy="572" r="2.2"/>
+    <circle cx="624" cy="583" r="2.2"/>
+    <circle cx="597" cy="581" r="2.2"/>
+    <circle cx="574" cy="567" r="2.2"/>
+    <circle cx="558" cy="545" r="2.2"/>
+
+    <circle cx="575" cy="520" r="1.9"/>
+    <circle cx="583" cy="499" r="1.9"/>
+    <circle cx="599" cy="485" r="1.9"/>
+    <circle cx="620" cy="478" r="1.9"/>
+    <circle cx="641" cy="482" r="1.9"/>
+    <circle cx="658" cy="495" r="1.9"/>
+    <circle cx="666" cy="515" r="1.9"/>
+    <circle cx="662" cy="536" r="1.9"/>
+    <circle cx="648" cy="552" r="1.9"/>
+    <circle cx="627" cy="559" r="1.9"/>
+    <circle cx="606" cy="555" r="1.9"/>
+    <circle cx="589" cy="542" r="1.9"/>
+  </g>
+
+  <g>
+    <circle cx="610" cy="520" r="16" fill="#FFFFFF"/>
+    <circle cx="610" cy="520" r="28" fill="#AAA5FF" opacity="0.34" filter="url(#glow)"/>
+    <circle cx="610" cy="520" r="44" fill="#766BFF" opacity="0.14" filter="url(#glow)"/>
+  </g>
+</svg>
