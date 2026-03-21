@@ -1,7 +1,8 @@
 .ai
+.references
 *.exe
 coverage.out
 coverage
 /logsage
 /logsage.exe
-.claude/**/*.*
+.claude/**/*.md
