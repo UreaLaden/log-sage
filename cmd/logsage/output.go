@@ -10,21 +10,21 @@ import (
 )
 
 var classLabels = map[string]string{
-	"OutOfMemory":               "Out of memory",
-	"CrashLoopBackOff":          "Container crash loop",
-	"ImagePullBackOff":          "Image pull failure",
-	"ConnectionRefused":         "Connection refused",
-	"DNSFailure":                "DNS resolution failure",
-	"TLSFailure":                "TLS/certificate failure",
-	"MissingEnvVar":             "Missing environment variable",
-	"PermissionDenied":          "Permission denied",
-	"DiskFull":                  "Disk full",
-	"DependencyTimeout":         "Dependency timeout",
-	"Panic":                     "Application panic",
-	"PortBindingFailure":        "Port binding failure",
-	"CIPermissionDenied":        "CI permission denied",
+	"OutOfMemory":                "Out of memory",
+	"CrashLoopBackOff":           "Container crash loop",
+	"ImagePullBackOff":           "Image pull failure",
+	"ConnectionRefused":          "Connection refused",
+	"DNSFailure":                 "DNS resolution failure",
+	"TLSFailure":                 "TLS/certificate failure",
+	"MissingEnvVar":              "Missing environment variable",
+	"PermissionDenied":           "Permission denied",
+	"DiskFull":                   "Disk full",
+	"DependencyTimeout":          "Dependency timeout",
+	"Panic":                      "Application panic",
+	"PortBindingFailure":         "Port binding failure",
+	"CIPermissionDenied":         "CI permission denied",
 	"MissingSecretOrAuthFailure": "Missing secret or auth failure",
-	"TestFailure":               "Test failure",
+	"TestFailure":                "Test failure",
 }
 
 func humanLabel(issueClass string) string {
