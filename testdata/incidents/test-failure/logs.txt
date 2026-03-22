@@ -1,0 +1,6 @@
+=== RUN   TestCandidateHypothesisRetainsClassName
+--- FAIL: TestCandidateHypothesisRetainsClassName (0.00s)
+    candidate_test.go:27: Class.Name = "ConnectionRefused", want "DOGFOOD_FAILURE"
+FAIL
+FAIL	github.com/Urealaden/log-sage-temp/internal/scoring	0.012s
+FAIL

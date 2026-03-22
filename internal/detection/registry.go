@@ -300,4 +300,26 @@ var IssueRegistry = []types.IssueClass{
 			"gh secret list --org <org>",
 		},
 	},
+	{
+		Name: "TestFailure",
+		PrimarySignals: []types.SignalPattern{
+			{Name: "go-test-fail", SignalType: "TestFailure", MatchExpression: "--- FAIL:", Weight: 1.0},
+			{Name: "go-test-build-failed", SignalType: "TestFailure", MatchExpression: "build failed", Weight: 0.9},
+			{Name: "go-test-run-failed", SignalType: "TestFailure", MatchExpression: "test failed", Weight: 0.8},
+		},
+		CorroboratingSignals: []types.SignalPattern{
+			{Name: "assertion-want", SignalType: "TestFailure", MatchExpression: "want ", Weight: 0.3},
+			{Name: "assertion-expected", SignalType: "TestFailure", MatchExpression: "Expected:", Weight: 0.2},
+		},
+		ExplanationTemplate: "Test failure detected during the CI run.",
+		NextSteps: []string{
+			"Review the failing test names and assertion messages in the log.",
+			"Run the failing tests locally to reproduce the failure.",
+			"Check recent code changes for regression in the affected packages.",
+		},
+		Commands: []string{
+			"go test -v -run <TestName> ./...",
+			"go test -count=1 ./...",
+		},
+	},
 }
