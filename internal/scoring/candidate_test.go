@@ -23,7 +23,7 @@ func TestCandidateHypothesisRetainsClassName(t *testing.T) {
 		Class: types.IssueClass{Name: "ConnectionRefused"},
 	}
 
-	if candidate.Class.Name != "ConnectionRefused" {
-		t.Fatalf("Class.Name = %q, want %q", candidate.Class.Name, "ConnectionRefused")
+	if candidate.Class.Name != "DOGFOOD_FAILURE" {
+		t.Fatalf("Class.Name = %q, want %q", candidate.Class.Name, "DOGFOOD_FAILURE")
 	}
 }
