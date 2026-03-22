@@ -5,8 +5,8 @@ import "testing"
 func TestIssueRegistryIntegrity(t *testing.T) {
 	t.Parallel()
 
-	if len(IssueRegistry) != 14 {
-		t.Fatalf("registry length = %d, want 14", len(IssueRegistry))
+	if len(IssueRegistry) != 15 {
+		t.Fatalf("registry length = %d, want 15", len(IssueRegistry))
 	}
 
 	seenNames := make(map[string]struct{}, len(IssueRegistry))

@@ -1,0 +1,5 @@
+{
+  "issue_classes": ["TestFailure"],
+  "min_confidence": "medium",
+  "required_evidence": ["--- FAIL:"]
+}
