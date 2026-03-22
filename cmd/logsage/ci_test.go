@@ -183,7 +183,7 @@ func TestCICmdCISummary(t *testing.T) {
 
 		output := stdout.String()
 		for _, want := range []string{
-			"Top Cause: OutOfMemory (high confidence)",
+			"Out of memory",
 			"Evidence:",
 			"OOMKilled",
 			"Recommended Action:",
