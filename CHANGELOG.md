@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/UreaLaden/log-sage/compare/v1.1.0...v1.1.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* **output:** headline-first CI summary with human-readable class labels ([f88a877](https://github.com/UreaLaden/log-sage/commit/f88a8779052ad02e5818c9a8a247f019d91bf49f))
+* **output:** headline-first CI summary with human-readable class labels ([20ce010](https://github.com/UreaLaden/log-sage/commit/20ce0109750cd4bfd6806d41a9f4e4a95d1ba8c7))
+
 ## [1.0.2](https://github.com/UreaLaden/log-sage/compare/v1.0.1...v1.0.2) (2026-03-22)
 
 
