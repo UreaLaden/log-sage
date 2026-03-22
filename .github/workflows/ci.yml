@@ -8,6 +8,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read       # required for actions/checkout
+      pull-requests: write # required for LogSage PR comment posting
 
     steps:
       - uses: actions/checkout@v4
@@ -20,10 +23,16 @@ jobs:
         run: go mod download
 
       - name: Run tests with coverage
-        shell: bash
-        run: |
-          packages="$(go list -f '{{if or .TestGoFiles .XTestGoFiles}}{{.ImportPath}}{{end}}' ./... | sed '/^$/d')"
-          go test ${packages} -coverprofile=coverage.out
+        # Uses actions-logsage in run: mode — wraps go test, captures output,
+        # and posts a LogSage analysis comment on the PR if tests fail.
+        # Note: fork PRs receive a ::warning:: instead of a PR comment because
+        # GITHUB_TOKEN is read-only for pull_request events from forks.
+        # TODO: pin to a release tag once actions-logsage v1 is tagged.
+        uses: UreaLaden/actions-logsage@main
+        with:
+          run: |
+            packages="$(go list -f '{{if or .TestGoFiles .XTestGoFiles}}{{.ImportPath}}{{end}}' ./... | sed '/^$/d')"
+            go test ${packages} -coverprofile=coverage.out
 
       - name: Print coverage summary
         shell: bash
