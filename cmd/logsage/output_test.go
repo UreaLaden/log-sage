@@ -19,7 +19,7 @@ func TestPrintCISummary(t *testing.T) {
 		wantAbsent  []string
 	}{
 		{
-			name: "oom result renders top cause confidence evidence and action",
+			name: "oom result renders human label evidence and action",
 			result: &types.AnalysisResult{
 				TopCauses: []types.Hypothesis{
 					{
@@ -40,13 +40,14 @@ func TestPrintCISummary(t *testing.T) {
 				RecommendedNextSteps: []string{"Increase memory limit"},
 			},
 			wantContain: []string{
-				"Top Cause: OutOfMemory (high confidence)",
+				"Out of memory",
 				"Evidence:",
 				"- container terminated with OOMKilled",
 				"- kernel: out of memory",
 				"Recommended Action:",
 				"- Increase memory limit",
 			},
+			wantAbsent: []string{"OutOfMemory", "confidence"},
 		},
 		{
 			name:      "no issues",
@@ -110,9 +111,47 @@ func TestPrintCISummary(t *testing.T) {
 				},
 			},
 			wantContain: []string{
-				"Top Cause: ConnectionRefused (low confidence)",
+				"Connection refused",
 			},
-			wantAbsent: []string{"Recommended Action:"},
+			wantAbsent: []string{"Recommended Action:", "ConnectionRefused", "confidence"},
+		},
+		{
+			name: "TestFailure extracts test name from evidence",
+			result: &types.AnalysisResult{
+				TopCauses: []types.Hypothesis{
+					{
+						IssueClass: "TestFailure",
+						Confidence: types.ConfidenceHigh,
+						Evidence: []types.Evidence{
+							{
+								Examples: []string{`--- FAIL: TestCandidateHypothesisRetainsClassName (0.00s)`},
+							},
+						},
+					},
+				},
+			},
+			wantContain: []string{
+				"Test failure",
+				"`TestCandidateHypothesisRetainsClassName`",
+			},
+		},
+		{
+			name: "TestFailure without parseable test name uses label only",
+			result: &types.AnalysisResult{
+				TopCauses: []types.Hypothesis{
+					{
+						IssueClass: "TestFailure",
+						Confidence: types.ConfidenceMedium,
+						Evidence: []types.Evidence{
+							{
+								Signal: "build failed",
+							},
+						},
+					},
+				},
+			},
+			wantContain: []string{"Test failure"},
+			wantAbsent:  []string{"---"},
 		},
 	}
 

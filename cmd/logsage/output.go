@@ -4,9 +4,49 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/Urealaden/log-sage-temp/pkg/types"
 )
+
+var classLabels = map[string]string{
+	"OutOfMemory":               "Out of memory",
+	"CrashLoopBackOff":          "Container crash loop",
+	"ImagePullBackOff":          "Image pull failure",
+	"ConnectionRefused":         "Connection refused",
+	"DNSFailure":                "DNS resolution failure",
+	"TLSFailure":                "TLS/certificate failure",
+	"MissingEnvVar":             "Missing environment variable",
+	"PermissionDenied":          "Permission denied",
+	"DiskFull":                  "Disk full",
+	"DependencyTimeout":         "Dependency timeout",
+	"Panic":                     "Application panic",
+	"PortBindingFailure":        "Port binding failure",
+	"CIPermissionDenied":        "CI permission denied",
+	"MissingSecretOrAuthFailure": "Missing secret or auth failure",
+	"TestFailure":               "Test failure",
+}
+
+func humanLabel(issueClass string) string {
+	if label, ok := classLabels[issueClass]; ok {
+		return label
+	}
+	return issueClass
+}
+
+// extractTestName parses "--- FAIL: TestFoo (0.00s)" and returns "TestFoo".
+// Returns empty string if the pattern is not found.
+func extractTestName(examples []string) string {
+	for _, ex := range examples {
+		if strings.HasPrefix(ex, "--- FAIL:") {
+			parts := strings.Fields(ex)
+			if len(parts) >= 3 {
+				return parts[2]
+			}
+		}
+	}
+	return ""
+}
 
 func printResult(w io.Writer, result *types.AnalysisResult) error {
 	if len(result.TopCauses) == 0 {
@@ -108,10 +148,26 @@ func printCISummary(w io.Writer, result *types.AnalysisResult) error {
 	}
 
 	topCause := result.TopCauses[0]
-	if _, err := fmt.Fprintf(w, "Top Cause: %s (%s confidence)\n", topCause.IssueClass, topCause.Confidence); err != nil {
+	label := humanLabel(topCause.IssueClass)
+
+	// Build headline — extract entity when available
+	headline := label
+	if topCause.IssueClass == "TestFailure" {
+		var examples []string
+		for _, ev := range topCause.Evidence {
+			examples = append(examples, ev.Examples...)
+		}
+		if name := extractTestName(examples); name != "" {
+			headline = label + " — `" + name + "`"
+		}
+	}
+
+	// Line 1: headline (parseable by head -n 1)
+	if _, err := fmt.Fprintf(w, "%s\n", headline); err != nil {
 		return err
 	}
 
+	// Evidence lines
 	evidenceLines := ciSummaryEvidence(topCause)
 	if len(evidenceLines) > 0 {
 		if _, err := fmt.Fprintln(w, "Evidence:"); err != nil {
@@ -124,6 +180,7 @@ func printCISummary(w io.Writer, result *types.AnalysisResult) error {
 		}
 	}
 
+	// Recommended action (first step only)
 	if len(result.RecommendedNextSteps) > 0 {
 		if _, err := fmt.Fprintln(w, "Recommended Action:"); err != nil {
 			return err
